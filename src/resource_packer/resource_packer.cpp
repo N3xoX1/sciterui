@@ -17,6 +17,7 @@ bool ProcessDir(const Path & targetFile, const Path & sourceDir, const char * su
     ResourceMap.insert(RESOURCE_MAP::value_type("PNG", L"PNG"));
     ResourceMap.insert(RESOURCE_MAP::value_type("JPG", L"JPG"));
     ResourceMap.insert(RESOURCE_MAP::value_type("GIF", L"GIF"));
+    ResourceMap.insert(RESOURCE_MAP::value_type("SVG", L"SVG"));
     ResourceMap.insert(RESOURCE_MAP::value_type("BMP", RT_BITMAP));
     ResourceMap.insert(RESOURCE_MAP::value_type("ICO", RT_GROUP_ICON));
     ResourceMap.insert(RESOURCE_MAP::value_type("CUR", RT_GROUP_CURSOR));
