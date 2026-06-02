@@ -37,6 +37,7 @@
     <ClCompile Include="path_finder.cpp" />
     <ClCompile Include="resource_manager.cpp" />
     <ClCompile Include="sciter.cpp" />
+    <ClCompile Include="sciter_dpi.cpp" />
     <ClCompile Include="sciter_element.cpp" />
     <ClCompile Include="sciter_ui.cpp" />
     <ClCompile Include="sciter_value.cpp" />
@@ -68,6 +69,7 @@
     <ClInclude Include="path_finder.h" />
     <ClInclude Include="resource_manager.h" />
     <ClInclude Include="sciter.h" />
+    <ClInclude Include="sciter_dpi.h" />
     <ClInclude Include="sciter_handler_internal.h" />
     <ClInclude Include="sciter_value_internal.h" />
     <ClInclude Include="sciter_window.h" />

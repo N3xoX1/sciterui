@@ -84,6 +84,9 @@
     <ClCompile Include="path_finder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sciter_dpi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sciter.h">
@@ -150,6 +153,9 @@
       <Filter>include\widgets</Filter>
     </ClInclude>
     <ClInclude Include="path_finder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sciter_dpi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,14 +1,18 @@
 #include "sciter_window.h"
 #include "event_handler.h"
 #include "sciter.h"
+#include "sciter_dpi.h"
 #include "sciter_handler_internal.h"
 #include "std_string.h"
 #include <sciter-x-api.h>
 #include <sciter-x-def.h>
 #include <sciter_handler.h>
+#include <algorithm>
 #include <stdint.h>
 
 #undef HWINDOW
+#undef max
+#undef min
 
 namespace SciterUI
 {
@@ -17,6 +21,9 @@ SciterWindow::SciterWindow(Sciter & sciter) :
     m_sciter(sciter),
     m_hWnd(nullptr),
     m_hParent(nullptr),
+    m_createParent(nullptr),
+    m_layoutWidth(0),
+    m_layoutHeight(0),
     m_bound(false),
     m_destroyed(false)
 {
@@ -33,6 +40,10 @@ void SciterWindow::Show()
 
 bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags)
 {
+    m_createParent = parentWinow;
+    m_layoutWidth = width;
+    m_layoutHeight = height;
+
     bool childWindow = parentWinow != nullptr && (flags & SUIW_CHILD) != 0;
     bool startHidden = (flags & SUIW_HIDDEN) != 0;
 
@@ -113,7 +124,34 @@ void SciterWindow::CenterWindow(void)
 
 void SciterWindow::FixMinSize()
 {
+    if (m_hWnd == nullptr)
+    {
+        return;
+    }
+
     SciterUpdateWindow((HWND)m_hWnd);
+
+#ifdef WIN32
+    const uint32_t minWidth = SciterGetMinWidth((HWND)m_hWnd);
+    const uint32_t layoutWidth = m_layoutWidth > 0 ? static_cast<uint32_t>(m_layoutWidth) : minWidth;
+    const uint32_t minHeight = SciterGetMinHeight((HWND)m_hWnd, layoutWidth);
+
+    uint32_t width = std::max(minWidth, layoutWidth);
+    uint32_t height;
+    if (m_layoutHeight > 0)
+    {
+        height = std::max(minHeight, static_cast<uint32_t>(m_layoutHeight));
+    }
+    else
+    {
+        height = minHeight;
+    }
+
+    int w = static_cast<int>(width);
+    int h = static_cast<int>(height);
+    ScaleWindowSizeForDpi(m_createParent, w, h);
+    SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, w, h, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
+#else
     RECT rc;
     if (!GetWindowRect((HWND)m_hWnd, &rc))
     {
@@ -129,6 +167,7 @@ void SciterWindow::FixMinSize()
     {
         SetWindowPos((HWND)m_hWnd, 0, 0, 0, targetWidth, targetHeight, SWP_NOOWNERZORDER | SWP_NOMOVE);
     }
+#endif
 }
 
 HWINDOW SciterWindow::GetHandle() const
@@ -389,7 +428,24 @@ void SciterWindow::SetDefaultWindowSize(int x, int y, int width, int height)
         return;
     }
 
+    if (width <= 0 && height <= 0)
+    {
+        return;
+    }
+
+#ifdef WIN32
+    if (height <= 0)
+    {
+        return;
+    }
+
+    int w = width;
+    int h = height;
+    ScaleWindowSizeForDpi(m_createParent, w, h);
+    SetWindowPos((HWND)m_hWnd, nullptr, x, y, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+#else
     SetWindowPos((HWND)m_hWnd, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+#endif
 }
 
 LRESULT SciterWindow::HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm)
