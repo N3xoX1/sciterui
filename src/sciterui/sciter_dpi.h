@@ -6,5 +6,6 @@ namespace SciterUI
 {
 
 void ScaleWindowSizeForDpi(HWINDOW parentWindow, int & width, int & height);
+void ClampWindowSizeToWorkArea(HWINDOW parentWindow, int & width, int & height);
 
 } // namespace SciterUI

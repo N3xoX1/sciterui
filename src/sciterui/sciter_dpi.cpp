@@ -9,9 +9,12 @@
 namespace SciterUI
 {
 
-void ScaleWindowSizeForDpi(HWINDOW parentWindow, int & width, int & height)
-{
 #ifdef WIN32
+namespace
+{
+
+UINT GetDpiForParent(HWINDOW parentWindow)
+{
     HWND parent = (HWND)parentWindow;
     UINT dpi = USER_DEFAULT_SCREEN_DPI;
 
@@ -50,8 +53,16 @@ void ScaleWindowSizeForDpi(HWINDOW parentWindow, int & width, int & height)
         }
     }
 
-    width = ::MulDiv(width, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
-    height = ::MulDiv(height, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
+    return dpi;
+}
+
+} // namespace
+#endif
+
+void ClampWindowSizeToWorkArea(HWINDOW parentWindow, int & width, int & height)
+{
+#ifdef WIN32
+    HWND parent = (HWND)parentWindow;
 
     RECT workArea{};
     HMONITOR monitor = parent != nullptr ? ::MonitorFromWindow(parent, MONITOR_DEFAULTTONEAREST) : ::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY);
@@ -76,6 +87,20 @@ void ScaleWindowSizeForDpi(HWINDOW parentWindow, int & width, int & height)
     {
         height = maxHeight;
     }
+#else
+    (void)parentWindow;
+    (void)width;
+    (void)height;
+#endif
+}
+
+void ScaleWindowSizeForDpi(HWINDOW parentWindow, int & width, int & height)
+{
+#ifdef WIN32
+    const UINT dpi = GetDpiForParent(parentWindow);
+    width = ::MulDiv(width, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
+    height = ::MulDiv(height, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
+    ClampWindowSizeToWorkArea(parentWindow, width, height);
 #else
     (void)parentWindow;
     (void)width;

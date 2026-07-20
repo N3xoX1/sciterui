@@ -132,25 +132,32 @@ void SciterWindow::FixMinSize()
     SciterUpdateWindow((HWND)m_hWnd);
 
 #ifdef WIN32
+    int scaledLayoutWidth = 0;
+    int scaledLayoutHeight = 0;
+    if (m_layoutWidth > 0 || m_layoutHeight > 0)
+    {
+        scaledLayoutWidth = m_layoutWidth > 0 ? m_layoutWidth : 0;
+        scaledLayoutHeight = m_layoutHeight > 0 ? m_layoutHeight : 0;
+        ScaleWindowSizeForDpi(m_createParent, scaledLayoutWidth, scaledLayoutHeight);
+        if (m_layoutWidth <= 0)
+        {
+            scaledLayoutWidth = 0;
+        }
+        if (m_layoutHeight <= 0)
+        {
+            scaledLayoutHeight = 0;
+        }
+    }
+
     const uint32_t minWidth = SciterGetMinWidth((HWND)m_hWnd);
-    const uint32_t layoutWidth = m_layoutWidth > 0 ? static_cast<uint32_t>(m_layoutWidth) : minWidth;
-    const uint32_t minHeight = SciterGetMinHeight((HWND)m_hWnd, layoutWidth);
+    const uint32_t widthForHeight = scaledLayoutWidth > 0 ? static_cast<uint32_t>(scaledLayoutWidth) : minWidth;
+    const uint32_t minHeight = SciterGetMinHeight((HWND)m_hWnd, widthForHeight);
 
-    uint32_t width = std::max(minWidth, layoutWidth);
-    uint32_t height;
-    if (m_layoutHeight > 0)
-    {
-        height = std::max(minHeight, static_cast<uint32_t>(m_layoutHeight));
-    }
-    else
-    {
-        height = minHeight;
-    }
+    int width = static_cast<int>(scaledLayoutWidth > 0 ? std::max(minWidth, static_cast<uint32_t>(scaledLayoutWidth)) : minWidth);
+    int height = static_cast<int>(scaledLayoutHeight > 0 ? std::max(minHeight, static_cast<uint32_t>(scaledLayoutHeight)) : minHeight);
 
-    int w = static_cast<int>(width);
-    int h = static_cast<int>(height);
-    ScaleWindowSizeForDpi(m_createParent, w, h);
-    SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, w, h, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
+    ClampWindowSizeToWorkArea(m_createParent, width, height);
+    SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
 #else
     RECT rc;
     if (!GetWindowRect((HWND)m_hWnd, &rc))
