@@ -3,9 +3,9 @@
 #include "sciter_value.h"
 #include <vector>
 
-__interface ISciterElementCallback
+suinterface ISciterElementCallback
 {
-    bool OnSciterElement(SCITER_ELEMENT he);
+    virtual bool OnSciterElement(SCITER_ELEMENT he) = 0;
 };
 
 class SciterElement;

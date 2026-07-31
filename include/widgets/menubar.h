@@ -57,17 +57,17 @@ private:
     std::string m_iconSvg;
 };
 
-__interface IMenuBarSink
+suinterface IMenuBarSink
 {
-    void OnMenuItem(int32_t id, SCITER_ELEMENT item);
+    virtual void OnMenuItem(int32_t id, SCITER_ELEMENT item) = 0;
 };
 
 static const char * IID_IMENUBAR = "C890DFA5-2762-4727-A9E7-00F9B972ACE0";
-__interface IMenuBar
+suinterface IMenuBar
 {
-    void SetMenuContent(MenuBarItemList & items) const;
-    void AddSink(IMenuBarSink * sink);
-    void RemoveSink(IMenuBarSink * sink);
+    virtual void SetMenuContent(MenuBarItemList & items) const = 0;
+    virtual void AddSink(IMenuBarSink * sink) = 0;
+    virtual void RemoveSink(IMenuBarSink * sink) = 0;
 };
 
 void Register_WidgetMenuBar(ISciterUI & sciterUI);

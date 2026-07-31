@@ -2,28 +2,28 @@
 #include "sciter_ui.h"
 #include <stdint.h>
 
-__interface IClickSink
+suinterface IClickSink
 {
-    bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) = 0;
+    virtual bool OnClick(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t reason) = 0;
 };
 static const char * IID_ICLICKSINK = "591A7458-0F80-4A52-A68E-89B1E4F16FB3";
 
-__interface IDoubleClickSink
+suinterface IDoubleClickSink
 {
-    bool OnDoubleClick(SCITER_ELEMENT element, SCITER_ELEMENT source) = 0;
+    virtual bool OnDoubleClick(SCITER_ELEMENT element, SCITER_ELEMENT source) = 0;
 };
 static const char * IID_IDBLCLICKSINK = "D0D54987-9FF2-4D2A-83FB-77F996433351";
 
-__interface IMouseUpDownSink
+suinterface IMouseUpDownSink
 {
-    bool OnMouseUp(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y) = 0;
-    bool OnMouseDown(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y) = 0;
+    virtual bool OnMouseUp(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y) = 0;
+    virtual bool OnMouseDown(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y) = 0;
 };
 static const char * IID_IMOUSEUPDOWNSINK = "4C82DCC8-FEC7-4F74-A0EC-399F56742F59";
 
-__interface IMouseMoveSink
+suinterface IMouseMoveSink
 {
-    bool OnMouseMove(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y);
+    virtual bool OnMouseMove(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y) = 0;
 };
 static const char * IID_IMOUSEMOVESINK = "BA281D38-FED5-46B1-BD95-3584C37107E4";
 
@@ -153,29 +153,29 @@ enum SciterKeys : uint32_t
     SCITER_KEY_MENU = 348,
 };
 
-__interface IKeySink
+suinterface IKeySink
 {
-    bool OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) = 0;
-    bool OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) = 0;
-    bool OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) = 0;
+    virtual bool OnKeyDown(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) = 0;
+    virtual bool OnKeyUp(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) = 0;
+    virtual bool OnKeyChar(SCITER_ELEMENT element, SCITER_ELEMENT target, SciterKeys keyCode, uint32_t keyboardState) = 0;
 };
 static const char * IID_IKEYSINK = "DC6A7757-D203-4636-A738-998C688E602C";
 
-__interface IResizeSink
+suinterface IResizeSink
 {
-    bool OnSizeChanged(SCITER_ELEMENT elem) = 0;
+    virtual bool OnSizeChanged(SCITER_ELEMENT elem) = 0;
 };
 static const char * IID_IRESIZESINK = "AE59F6AB-045C-4CCC-A2C6-3CFBD6F288F0";
 
-__interface IStateChangeSink
+suinterface IStateChangeSink
 {
-    bool OnStateChange(SCITER_ELEMENT elem, uint32_t eventReason, void * data) = 0;
+    virtual bool OnStateChange(SCITER_ELEMENT elem, uint32_t eventReason, void * data) = 0;
 };
 static const char * IID_ISTATECHANGESINK = "C2534439-8130-400A-A0F9-B4E5B1B1952B";
 
-__interface ITimerSink
+suinterface ITimerSink
 {
-    bool OnTimer(SCITER_ELEMENT Element, uint32_t * TimerId);
+    virtual bool OnTimer(SCITER_ELEMENT Element, uint32_t * TimerId) = 0;
 };
 static const char * IID_ITIMERSINK = "9B8F8D75-6C09-40D8-AB24-6C2849A2F07E";
 
@@ -236,8 +236,8 @@ enum class SciterBehaviorEvent : uint32_t
     FirstApplicationEventCode = 0x100,
 };
 
-__interface IEventSink
+suinterface IEventSink
 {
-    bool OnEvent(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t event_code, uint64_t reason);
+    virtual bool OnEvent(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t event_code, uint64_t reason) = 0;
 };
 static const char * IID_EVENTSINK = "B3F842D6-C07D-49F9-8798-945A3F78F5EB";

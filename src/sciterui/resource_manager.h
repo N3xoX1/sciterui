@@ -8,7 +8,7 @@
 namespace SciterUI
 {
 
-__interface IModuleResource;
+suinterface IModuleResource;
 
 class ResourceManager
 {
