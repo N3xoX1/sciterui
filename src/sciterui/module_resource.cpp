@@ -34,18 +34,18 @@ bool ModuleResource::LoadModule(const char * path)
     return true;
 }
 
-bool ModuleResource::LoadResource(const wchar_t * name, const wchar_t * type, std::unique_ptr<uint8_t> & data, uint32_t & size)
+bool ModuleResource::LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t> & data, uint32_t & size)
 {
     if (m_module == nullptr)
     {
         return false;
     }
-    std::wstring fileName = name;
-    if (_wcsnicmp(fileName.c_str(), L"file:///", 8) == 0)
+    sui_ustring fileName = name;
+    if (_wcsnicmp(fileName.c_str(), SUI_WSTR("file:///"), 8) == 0)
     {
         fileName = fileName.substr(8, fileName.size() - 8);
     }
-    if (_wcsnicmp(fileName.c_str(), L"file://", 7) == 0)
+    if (_wcsnicmp(fileName.c_str(), SUI_WSTR("file://"), 7) == 0)
     {
         fileName = fileName.substr(7, fileName.size() - 7);
     }

@@ -363,7 +363,7 @@ void SciterWindow::Bind()
 bool SciterWindow::LoadHtml(const char * url)
 {
     Bind();
-    std::wstring loadUrl = stdstr_f(_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
+    sui_ustring loadUrl = stdstr_f(_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
     return FALSE != ::SciterLoadFile((HWND)m_hWnd, loadUrl.c_str());
 }
 
@@ -475,7 +475,12 @@ LRESULT SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
     {
         return LOAD_DISCARD;
     }
-    if (wcsncmp(pnmld->uri, L"data:", 5) == 0)
+    if (pnmld->uri &&
+        pnmld->uri[0] == u'd' &&
+        pnmld->uri[1] == u'a' &&
+        pnmld->uri[2] == u't' &&
+        pnmld->uri[3] == u'a' &&
+        pnmld->uri[4] == u':')
     {
         return LOAD_OK;
     }

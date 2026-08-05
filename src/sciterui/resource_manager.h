@@ -1,6 +1,7 @@
 #pragma once
 #include "module_disk.h"
 #include "path.h"
+#include "std_string.h"
 #include <map>
 #include <memory>
 #include <vector>
@@ -12,7 +13,7 @@ suinterface IModuleResource;
 
 class ResourceManager
 {
-    typedef std::map<std::wstring, const wchar_t *> RESOURCE_MAP;
+    typedef std::map<sui_ustring, const sui_wchar *> RESOURCE_MAP;
     typedef std::vector<std::unique_ptr<ModuleDisk>> ModulesDisk;
     typedef std::vector<std::unique_ptr<ModuleResource>> ModulesResource;
 
@@ -28,7 +29,7 @@ public:
     ResourceManager(const char * languageDir);
 
     bool Initialize(const char * baseLanguage, const char * currentLanguage);
-    bool LoadResource(const wchar_t * uri, std::unique_ptr<uint8_t> & data, uint32_t & size);
+    bool LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_t> & data, uint32_t & size);
 
 private:
     ResourceManager(void) = delete;
