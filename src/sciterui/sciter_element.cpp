@@ -416,7 +416,7 @@ void SciterElement::SetText(const char * text) const
     assert(text);
     if (text) 
     {
-        std::wstring wtext = SciterUI::stdstr(text).ToUTF16();
+        sui_ustring wtext = SciterUI::stdstr(text).ToUTF16();
         SCDOM_RESULT r = SciterSetElementText((HELEMENT)m_he, wtext.c_str(), UINT(wtext.size()));
         assert(r == SCDOM_OK); (void)r;
     }
@@ -446,7 +446,7 @@ void SciterElement::Update(bool renderNow) const
 
 SciterValue SciterElement::Eval(const char * script)
 {
-    std::wstring wScript(SciterUI::stdstr(script).ToUTF16());
+    sui_ustring wScript(SciterUI::stdstr(script).ToUTF16());
 
     SCITER_VALUE rv;
     SCDOM_RESULT r = SciterEvalElementScript((HELEMENT)m_he, wScript.c_str(), (UINT)wScript.length(), &rv);

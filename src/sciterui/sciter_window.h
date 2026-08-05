@@ -1,5 +1,6 @@
 #pragma once
 #include "event_handler.h"
+#include "std_string.h"
 #include <memory>
 #include <sciter_ui.h>
 #include <set>
@@ -29,7 +30,7 @@ class SciterWindow :
         uint32_t code; /**< [in] one of the codes above.*/
         HWINDOW hwnd;  /**< [in] HWINDOW of the window this callback was attached to.*/
 
-        const wchar_t * uri; /**< [in] Zero terminated string, fully qualified uri, for example "http://server/folder/file.ext".*/
+        const sui_wchar * uri; /**< [in] Zero terminated string, fully qualified uri, for example "http://server/folder/file.ext".*/
 
         const uint8_t * outData; /**< [in,out] pointer to loaded data to return. if data exists in the cache then this field contain pointer to it*/
         uint32_t outDataSize;    /**< [in,out] loaded data size to return.*/

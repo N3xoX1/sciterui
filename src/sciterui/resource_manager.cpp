@@ -7,18 +7,18 @@ namespace SciterUI
 ResourceManager::ResourceManager(const char * languageDir) :
     m_languageDir(languageDir, "")
 {
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"PNG", L"PNG"));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"JPG", L"JPG"));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"GIF", L"GIF"));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"SVG", L"SVG"));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"BMP", (const wchar_t *)RT_BITMAP));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"ICO", (const wchar_t *)RT_GROUP_ICON));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"CUR", (const wchar_t *)RT_GROUP_CURSOR));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"HTM", (const wchar_t *)RT_HTML));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"HTML", (const wchar_t *)RT_HTML));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"CSS", L"CSS"));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"INI", L"LANG"));
-    m_resourceMap.emplace(RESOURCE_MAP::value_type(L"LNG", L"LANG"));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("PNG"), SUI_WSTR("PNG")));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("JPG"), SUI_WSTR("JPG")));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("GIF"), SUI_WSTR("GIF")));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("SVG"), SUI_WSTR("SVG")));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("BMP"), (const sui_wchar *)RT_BITMAP));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("ICO"), (const sui_wchar *)RT_GROUP_ICON));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("CUR"), (const sui_wchar *)RT_GROUP_CURSOR));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("HTM"), (const sui_wchar *)RT_HTML));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("HTML"), (const sui_wchar *)RT_HTML));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("CSS"), SUI_WSTR("CSS")));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("INI"), SUI_WSTR("LANG")));
+    m_resourceMap.emplace(RESOURCE_MAP::value_type(SUI_WSTR("LNG"), SUI_WSTR("LANG")));
 }
 
 bool ResourceManager::Initialize(const char * baseLanguage, const char * currentLanguage)
@@ -47,21 +47,21 @@ bool ResourceManager::Initialize(const char * baseLanguage, const char * current
     return true;
 }
 
-bool ResourceManager::LoadResource(const wchar_t * uri, std::unique_ptr<uint8_t> & data, uint32_t & size)
+bool ResourceManager::LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_t> & data, uint32_t & size)
 {
     if (m_moduleBase == nullptr || m_moduleCurrent == nullptr)
     {
         return false;
     }
-    const wchar_t * ResourceType = wcsrchr(uri, '.');
+    const sui_wchar * ResourceType = wcsrchr(uri, '.');
     if (ResourceType == nullptr)
     {
         return false;
     }
 
     ResourceType += 1;
-    std::wstring resourceTypeUpper = ResourceType;
-    std::transform(resourceTypeUpper.begin(), resourceTypeUpper.end(), resourceTypeUpper.begin(), (wchar_t(*)(int))towupper);
+    sui_ustring resourceTypeUpper = ResourceType;
+    std::transform(resourceTypeUpper.begin(), resourceTypeUpper.end(), resourceTypeUpper.begin(), (sui_wchar(*)(int))towupper);
 
     RESOURCE_MAP::const_iterator iter = m_resourceMap.find(resourceTypeUpper);
     if (iter == m_resourceMap.end())

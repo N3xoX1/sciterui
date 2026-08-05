@@ -30,7 +30,7 @@ bool ModuleDisk::LoadModule(const char * path)
     return true;
 }
 
-bool ModuleDisk::LoadResource(const wchar_t * name, const wchar_t * type, std::unique_ptr<uint8_t> & data, uint32_t & size)
+bool ModuleDisk::LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t> & data, uint32_t & size)
 {
     Path ResPath = GetResPath(name, type);
     if (!ResPath.FileExists())
@@ -53,38 +53,38 @@ bool ModuleDisk::LoadResource(const wchar_t * name, const wchar_t * type, std::u
     return true;
 }
 
-Path ModuleDisk::GetResPath(const wchar_t * name, const wchar_t * type)
+Path ModuleDisk::GetResPath(const sui_wchar * name, const sui_wchar * type)
 {
     Path path(m_path);
 
     if ((uint64_t)type <= 0xFFFF)
     {
-        if (type == (const wchar_t *)ResourceManager::RT_BITMAP || type == (const wchar_t *)ResourceManager::RT_GROUP_ICON || type == (const wchar_t *)ResourceManager::RT_GROUP_CURSOR)
+        if (type == (const sui_wchar *)ResourceManager::RT_BITMAP || type == (const sui_wchar *)ResourceManager::RT_GROUP_ICON || type == (const sui_wchar *)ResourceManager::RT_GROUP_CURSOR)
         {
             path.AppendDirectory("image");
         }
-        else if (type == (const wchar_t *)ResourceManager::RT_HTML)
+        else if (type == (const sui_wchar *)ResourceManager::RT_HTML)
         {
             path.AppendDirectory("html");
         }
     }
     else
     {
-        if (_wcsicmp(type, L"png") == 0 || _wcsicmp(type, L"jpg") == 0 || _wcsicmp(type, L"gif") == 0 || _wcsicmp(type, L"svg") == 0)
+        if (_wcsicmp(type, SUI_WSTR("png")) == 0 || _wcsicmp(type, SUI_WSTR("jpg")) == 0 || _wcsicmp(type, SUI_WSTR("gif")) == 0 || _wcsicmp(type, SUI_WSTR("svg")) == 0)
         {
             path.AppendDirectory("image");
         }
-        else if (_wcsicmp(type, L"css") == 0)
+        else if (_wcsicmp(type, SUI_WSTR("css")) == 0)
         {
             path.AppendDirectory("css");
         }
-        else if (_wcsicmp(type, L"lang") == 0)
+        else if (_wcsicmp(type, SUI_WSTR("lang")) == 0)
         {
             path.AppendDirectory("lang");
         }
     }
-    std::wstring fileName = name;
-    if (_wcsnicmp(fileName.c_str(), L"file://", 7) == 0)
+    sui_ustring fileName = name;
+    if (_wcsnicmp(fileName.c_str(), SUI_WSTR("file://"), 7) == 0)
     {
         fileName = fileName.substr(7, fileName.size() - 7);
     }

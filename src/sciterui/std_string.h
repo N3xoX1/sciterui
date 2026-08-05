@@ -3,6 +3,15 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+using sui_wchar = wchar_t;
+#define SUI_WSTR(quote) L##quote
+#else
+using sui_wchar = char16_t;
+#define SUI_WSTR(quote) u##quote
+#endif
+using sui_ustring = std::basic_string<sui_wchar>;
+
 namespace SciterUI
 {
 
@@ -13,11 +22,6 @@ class stdstr :
     public std::string
 {
 public:
-    enum
-    {
-        CODEPAGE_UTF8 = 65001,
-    };
-
     stdstr();
     stdstr(const std::string & str);
     stdstr(const stdstr & str);
@@ -30,10 +34,8 @@ public:
     stdstr & Replace(const char * search, const char replace);
     stdstr & Replace(const std::string & search, const std::string & replace);
 
-#ifdef _WIN32
-    stdstr & FromUTF16(const wchar_t * utf16Source, bool * success = nullptr);
-    std::wstring ToUTF16(unsigned int codePage = CODEPAGE_UTF8, bool * success = nullptr) const;
-#endif
+    stdstr & FromUTF16(const sui_wchar * utf16Source, bool * success = nullptr);
+    sui_ustring ToUTF16(bool * success = nullptr) const;
 
     void ArgFormat(const char * format, va_list & args);
 };
