@@ -290,9 +290,11 @@ void SciterWindow::SetDestroyed(void)
     for (EventSinks::iterator itr = m_eventSinks.begin(); itr != m_eventSinks.end(); itr++)
     {
         EventHandler * handler = itr->Sink.get();
-        if (IID_ICLICKSINK == itr->riid)
+        LPELEMENT_EVENT_PROC eventProc = nullptr;
+        uint32_t subscription = 0;
+        if (GetEventProc(itr->riid.c_str(), eventProc, subscription) && eventProc != nullptr)
         {
-            SciterDetachEventHandler((HELEMENT)itr->Element, (::LPELEMENT_EVENT_PROC)&EventHandler::ClickHandler, handler);
+            SciterDetachEventHandler((HELEMENT)itr->Element, (::LPELEMENT_EVENT_PROC)eventProc, handler);
         }
     }
     m_eventSinks.clear();
