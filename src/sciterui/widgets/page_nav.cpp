@@ -20,7 +20,7 @@ class WidgetPageNav :
     {
         bool operator()(const std::string & a, const std::string & b) const
         {
-            return _stricmp(a.c_str(), b.c_str()) < 0;
+            return sui_stricmp(a.c_str(), b.c_str()) < 0;
         }
     };
 

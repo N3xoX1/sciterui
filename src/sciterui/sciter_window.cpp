@@ -365,7 +365,7 @@ void SciterWindow::Bind()
 bool SciterWindow::LoadHtml(const char * url)
 {
     Bind();
-    sui_ustring loadUrl = stdstr_f(_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
+    sui_ustring loadUrl = stdstr_f(sui_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
     return FALSE != ::SciterLoadFile((HWND)m_hWnd, loadUrl.c_str());
 }
 

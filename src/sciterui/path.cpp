@@ -516,7 +516,7 @@ void Path::CleanPath(std::string & path) const
     }
 
 #ifdef _WIN32
-    bool appendEnd = !_strnicmp(path.c_str(), DIR_DOUBLEDELIM, 2);
+    bool appendEnd = !sui_strnicmp(path.c_str(), DIR_DOUBLEDELIM, 2);
 #else
     bool appendEnd = false;
 #endif

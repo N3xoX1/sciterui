@@ -70,21 +70,21 @@ Path ModuleDisk::GetResPath(const sui_wchar * name, const sui_wchar * type)
     }
     else
     {
-        if (_wcsicmp(type, SUI_WSTR("png")) == 0 || _wcsicmp(type, SUI_WSTR("jpg")) == 0 || _wcsicmp(type, SUI_WSTR("gif")) == 0 || _wcsicmp(type, SUI_WSTR("svg")) == 0)
+        if (sui_wcsicmp(type, SUI_WSTR("png")) == 0 || sui_wcsicmp(type, SUI_WSTR("jpg")) == 0 || sui_wcsicmp(type, SUI_WSTR("gif")) == 0 || sui_wcsicmp(type, SUI_WSTR("svg")) == 0)
         {
             path.AppendDirectory("image");
         }
-        else if (_wcsicmp(type, SUI_WSTR("css")) == 0)
+        else if (sui_wcsicmp(type, SUI_WSTR("css")) == 0)
         {
             path.AppendDirectory("css");
         }
-        else if (_wcsicmp(type, SUI_WSTR("lang")) == 0)
+        else if (sui_wcsicmp(type, SUI_WSTR("lang")) == 0)
         {
             path.AppendDirectory("lang");
         }
     }
     sui_ustring fileName = name;
-    if (_wcsnicmp(fileName.c_str(), SUI_WSTR("file://"), 7) == 0)
+    if (sui_wcsnicmp(fileName.c_str(), SUI_WSTR("file://"), 7) == 0)
     {
         fileName = fileName.substr(7, fileName.size() - 7);
     }
