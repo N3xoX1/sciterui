@@ -2,6 +2,7 @@
 #include "file.h"
 #include "resource_manager.h"
 #include "std_string.h"
+#include <cstdint>
 
 namespace SciterUI
 {
@@ -43,14 +44,14 @@ bool ModuleDisk::LoadResource(const sui_wchar * name, const sui_wchar * type, st
     {
         return false;
     }
-    uint32_t ulLen = resFile.GetLength();
-    if (ulLen <= 0)
+    uint64_t ulLen = resFile.GetLength();
+    if (ulLen == 0 || ulLen > UINT32_MAX)
     {
         return false;
     }
-    data.reset(new uint8_t[ulLen]);
-    size = resFile.Read(data.get(), ulLen);
-    return true;
+    data.reset(new uint8_t[(size_t)ulLen]);
+    size = resFile.Read(data.get(), (uint32_t)ulLen);
+    return size == (uint32_t)ulLen;
 }
 
 Path ModuleDisk::GetResPath(const sui_wchar * name, const sui_wchar * type)
