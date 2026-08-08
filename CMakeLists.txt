@@ -27,3 +27,13 @@ set(SCITERUI_SOURCES
 )
 
 add_library(sciterui STATIC ${SCITERUI_SOURCES})
+
+target_include_directories(sciterui
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/sciterui
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/3rd_party/sciter-js-sdk-main/include
+)
+
+target_compile_features(sciterui PUBLIC cxx_std_20)
