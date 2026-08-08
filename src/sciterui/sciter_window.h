@@ -11,8 +11,6 @@ namespace SciterUI
 {
 class Sciter;
 
-#define SC_CALLBACK sui_callback
-
 class SciterWindow :
     public ISciterWindow
 {
@@ -43,7 +41,7 @@ class SciterWindow :
     } SCN_LOAD_DATA;
 
     typedef SCN_LOAD_DATA * LPSCN_LOAD_DATA;
-    typedef int SC_CALLBACK ElementEventProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    typedef int sui_callback ElementEventProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
 
     /**This structure is used by #SC_ATTACH_BEHAVIOR notification.
      *\copydoc SC_ATTACH_BEHAVIOR **/
@@ -129,7 +127,7 @@ private:
     int64_t OnEngineDestroyed(void);
     bool QueryClose() const;
 
-    static uint32_t SC_CALLBACK SciterCallback(LPSCITER_CALLBACK_NOTIFICATION pnm, void * param);
+    static uint32_t sui_callback SciterCallback(LPSCITER_CALLBACK_NOTIFICATION pnm, void * param);
 
     Sciter & m_sciter;
     HWINDOW m_hWnd;
