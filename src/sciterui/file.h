@@ -23,14 +23,12 @@ public:
     };
 
     File();
-    File(void * fileHandle);
-    File(const char * fileName, uint32_t openFlags);
     ~File();
 
     bool Open(const char * fileName, uint32_t openFlags);
     bool Close();
 
-    uint32_t GetLength() const;
+    uint64_t GetLength() const;
 
     uint32_t Read(void * buffer, uint32_t bufferSize);
     bool Write(const void * buffer, uint32_t bufferSize);
