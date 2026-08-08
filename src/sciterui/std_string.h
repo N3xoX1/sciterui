@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,15 @@ using sui_wchar = char16_t;
 #define SUI_WSTR(quote) u##quote
 #endif
 using sui_ustring = std::basic_string<sui_wchar>;
+
+char sui_toupper_ascii(unsigned char c);
+sui_wchar sui_towupper(sui_wchar c);
+int sui_stricmp(const char * a, const char * b);
+int sui_strnicmp(const char * a, const char * b, size_t count);
+int sui_wcsicmp(const sui_wchar * a, const sui_wchar * b);
+int sui_wcsnicmp(const sui_wchar * a, const sui_wchar * b, size_t count);
+const sui_wchar * sui_wcsrchr(const sui_wchar * s, sui_wchar c);
+size_t sui_wcslen(const sui_wchar * s);
 
 namespace SciterUI
 {

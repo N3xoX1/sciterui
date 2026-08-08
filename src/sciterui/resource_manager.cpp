@@ -1,5 +1,4 @@
 #include "resource_manager.h"
-#include <algorithm>
 
 namespace SciterUI
 {
@@ -32,7 +31,7 @@ bool ResourceManager::Initialize(const char * baseLanguage, const char * current
     {
         return false;
     }
-    if (_stricmp(baseLanguage, currentLanguage) != 0)
+    if (sui_stricmp(baseLanguage, currentLanguage) != 0)
     {
         m_moduleCurrent = LoadLanguageFile(currentLanguage);
         if (m_moduleCurrent == nullptr)
@@ -53,7 +52,7 @@ bool ResourceManager::LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_
     {
         return false;
     }
-    const sui_wchar * ResourceType = wcsrchr(uri, '.');
+    const sui_wchar * ResourceType = sui_wcsrchr(uri, '.');
     if (ResourceType == nullptr)
     {
         return false;
@@ -61,7 +60,10 @@ bool ResourceManager::LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_
 
     ResourceType += 1;
     sui_ustring resourceTypeUpper = ResourceType;
-    std::transform(resourceTypeUpper.begin(), resourceTypeUpper.end(), resourceTypeUpper.begin(), (sui_wchar(*)(int))towupper);
+    for (sui_wchar & ch : resourceTypeUpper)
+    {
+        ch = sui_towupper(ch);
+    }
 
     RESOURCE_MAP::const_iterator iter = m_resourceMap.find(resourceTypeUpper);
     if (iter == m_resourceMap.end())

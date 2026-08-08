@@ -10,6 +10,118 @@
 #include <stdio.h>
 #endif
 
+char sui_toupper_ascii(unsigned char c)
+{
+    return (c >= 'a' && c <= 'z') ? static_cast<char>(c - ('a' - 'A')) : static_cast<char>(c);
+}
+
+sui_wchar sui_towupper(sui_wchar c)
+{
+    return (c >= static_cast<sui_wchar>('a') && c <= static_cast<sui_wchar>('z'))
+        ? static_cast<sui_wchar>(c - (static_cast<sui_wchar>('a') - static_cast<sui_wchar>('A')))
+        : c;
+}
+
+int sui_stricmp(const char * a, const char * b)
+{
+    while (*a && *b)
+    {
+        const int d = sui_toupper_ascii(static_cast<unsigned char>(*a)) - sui_toupper_ascii(static_cast<unsigned char>(*b));
+        if (d != 0)
+        {
+            return d;
+        }
+        ++a;
+        ++b;
+    }
+    return sui_toupper_ascii(static_cast<unsigned char>(*a)) - sui_toupper_ascii(static_cast<unsigned char>(*b));
+}
+
+int sui_strnicmp(const char * a, const char * b, size_t count)
+{
+    while (count != 0 && *a && *b)
+    {
+        const int d = sui_toupper_ascii(static_cast<unsigned char>(*a)) - sui_toupper_ascii(static_cast<unsigned char>(*b));
+        if (d != 0)
+        {
+            return d;
+        }
+        ++a;
+        ++b;
+        --count;
+    }
+    if (count == 0)
+    {
+        return 0;
+    }
+    return sui_toupper_ascii(static_cast<unsigned char>(*a)) - sui_toupper_ascii(static_cast<unsigned char>(*b));
+}
+
+int sui_wcsicmp(const sui_wchar * a, const sui_wchar * b)
+{
+    while (*a && *b)
+    {
+        const int d = static_cast<int>(sui_towupper(*a)) - static_cast<int>(sui_towupper(*b));
+        if (d != 0)
+        {
+            return d;
+        }
+        ++a;
+        ++b;
+    }
+    return static_cast<int>(sui_towupper(*a)) - static_cast<int>(sui_towupper(*b));
+}
+
+int sui_wcsnicmp(const sui_wchar * a, const sui_wchar * b, size_t count)
+{
+    while (count != 0 && *a && *b)
+    {
+        const int d = static_cast<int>(sui_towupper(*a)) - static_cast<int>(sui_towupper(*b));
+        if (d != 0)
+        {
+            return d;
+        }
+        ++a;
+        ++b;
+        --count;
+    }
+    if (count == 0)
+    {
+        return 0;
+    }
+    return static_cast<int>(sui_towupper(*a)) - static_cast<int>(sui_towupper(*b));
+}
+
+const sui_wchar * sui_wcsrchr(const sui_wchar * s, sui_wchar c)
+{
+    const sui_wchar * last = nullptr;
+    if (s == nullptr)
+    {
+        return nullptr;
+    }
+    for (; *s; ++s)
+    {
+        if (*s == c)
+        {
+            last = s;
+        }
+    }
+    return last;
+}
+
+size_t sui_wcslen(const sui_wchar * s)
+{
+    size_t n = 0;
+    if (s != nullptr)
+    {
+        while (*s++)
+        {
+            ++n;
+        }
+    }
+    return n;
+}
+
 namespace SciterUI
 {
 
@@ -106,7 +218,7 @@ stdstr & stdstr::FromUTF16(const sui_wchar * utf16Source, bool * success)
         *this = "";
         converted = true;
     }
-    else if (wcslen(utf16Source) > 0)
+    else if (sui_wcslen(utf16Source) > 0)
     {
         uint32_t needed = WideCharToMultiByte(CP_UTF8, 0, utf16Source, -1, nullptr, 0, nullptr, nullptr);
         if (needed > 0)
