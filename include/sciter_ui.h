@@ -4,8 +4,10 @@
 
 #ifdef _MSC_VER
 #define suinterface __interface
+#define sui_callback __stdcall
 #else
 #define suinterface struct
+#define sui_callback
 #endif
 
 typedef const void * SCITER_ELEMENT;
@@ -58,8 +60,8 @@ suinterface IWidget
 };
 
 suinterface ISciterUI;
-typedef IWidget * (__stdcall * tyCreateWidget)(ISciterUI & SciterUI);
-typedef void(__stdcall * tyReleaseWidget)(IWidget * widget);
+typedef IWidget * (sui_callback * tyCreateWidget)(ISciterUI & SciterUI);
+typedef void(sui_callback * tyReleaseWidget)(IWidget * widget);
 
 enum SCITERUI_WINDOW_CREATE_FLAGS {
     SUIW_CHILD = (1 << 0), // child window only, if this flag is set all other flags ignored

@@ -49,8 +49,8 @@ private:
     void Detached(SCITER_ELEMENT element) override;
     std::shared_ptr<void> GetInterface(const char* riid) override;
 
-    static IWidget * __stdcall CreateWidget(ISciterUI & SciterUI);
-    static void __stdcall ReleaseWidget(IWidget * widget);
+    static IWidget * sui_callback CreateWidget(ISciterUI & SciterUI);
+    static void sui_callback ReleaseWidget(IWidget * widget);
 
     static ToolTips m_instances;
 
@@ -228,7 +228,7 @@ bool WidgetToolTipHost::Register(ISciterUI & SciterUI)
     return SciterUI.RegisterWidgetType("tooltip-host", WidgetToolTipHost::CreateWidget, WidgetToolTipHost::ReleaseWidget, WidgetCss);
 }
 
-IWidget * __stdcall WidgetToolTipHost::CreateWidget(ISciterUI & sciterUI)
+IWidget * sui_callback WidgetToolTipHost::CreateWidget(ISciterUI & sciterUI)
 {
     std::shared_ptr<WidgetToolTipHost> instance(new WidgetToolTipHost(sciterUI));
     IWidget * widget = (IWidget*)instance.get();
@@ -237,7 +237,7 @@ IWidget * __stdcall WidgetToolTipHost::CreateWidget(ISciterUI & sciterUI)
     return widget;
 }
 
-void __stdcall WidgetToolTipHost::ReleaseWidget(IWidget * widget)
+void sui_callback WidgetToolTipHost::ReleaseWidget(IWidget * widget)
 {
     ToolTips::iterator it = m_instances.find(widget);
     if (it != m_instances.end())

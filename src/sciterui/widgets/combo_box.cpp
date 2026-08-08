@@ -38,8 +38,8 @@ namespace SciterUI
         SCITER_ELEMENT GetSelectedItem() const override;
         bool SelectItem(int32_t index) override;
 
-        static IWidget * __stdcall CreateWidget(ISciterUI & SciterUI);
-        static void __stdcall ReleaseWidget(IWidget * widget);
+        static IWidget * sui_callback CreateWidget(ISciterUI & SciterUI);
+        static void sui_callback ReleaseWidget(IWidget * widget);
 
         static ComboBoxes m_instances;
 
@@ -225,7 +225,7 @@ namespace SciterUI
         return true;
     }
 
-    IWidget * __stdcall WidgetComboBox::CreateWidget(ISciterUI & sciterUI)
+    IWidget * sui_callback WidgetComboBox::CreateWidget(ISciterUI & sciterUI)
     {
         std::shared_ptr<WidgetComboBox> instance(new WidgetComboBox(sciterUI));
         IWidget * widget = (IWidget*)instance.get();

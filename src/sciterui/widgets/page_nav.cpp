@@ -81,8 +81,8 @@ private:
     void AddSink(IPagesSink * sink) override;
     void RemoveSink(IPagesSink * sink) override;
 
-    static IWidget * __stdcall CreateWidget(ISciterUI & sciterUI);
-    static void __stdcall ReleaseWidget(IWidget * widget);
+    static IWidget * sui_callback CreateWidget(ISciterUI & sciterUI);
+    static void sui_callback ReleaseWidget(IWidget * widget);
 
     static PageNavs m_instances;
 
@@ -356,7 +356,7 @@ void WidgetPageNav::RemoveSink(IPagesSink * Sink)
     }
 }
 
-IWidget * __stdcall WidgetPageNav::CreateWidget(ISciterUI & sciterUI)
+IWidget * sui_callback WidgetPageNav::CreateWidget(ISciterUI & sciterUI)
 {
     std::shared_ptr<WidgetPageNav> instance(new WidgetPageNav(sciterUI));
     IWidget* widget = (IWidget*)instance.get();
@@ -365,7 +365,7 @@ IWidget * __stdcall WidgetPageNav::CreateWidget(ISciterUI & sciterUI)
     return widget;
 }
 
-void __stdcall WidgetPageNav::ReleaseWidget(IWidget* widget)
+void sui_callback WidgetPageNav::ReleaseWidget(IWidget* widget)
 {
     PageNavs::iterator it = m_instances.find(widget);
     if (it != m_instances.end())

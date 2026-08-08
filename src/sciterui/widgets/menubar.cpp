@@ -64,8 +64,8 @@ private:
     static bool ElementIsUnderMainMenuWidget(const SciterElement & hit, const SciterElement & mainMenuElem);
 
     static std::string MenuItemHtml(const MenuBarItem & item, uint32_t indent);
-    static IWidget * __stdcall CreateWidget(ISciterUI & sciterUI);
-    static void __stdcall ReleaseWidget(IWidget * widget);
+    static IWidget * sui_callback CreateWidget(ISciterUI & sciterUI);
+    static void sui_callback ReleaseWidget(IWidget * widget);
 
     static MenuBars m_instances;
 

@@ -2,7 +2,7 @@
 #include <sciter_ui.h>
 #include <stdint.h>
 
-#define SCITER_CALLBACK __stdcall
+#define SCITER_CALLBACK sui_callback
 
 namespace SciterUI
 {
