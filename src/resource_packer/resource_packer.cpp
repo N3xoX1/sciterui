@@ -1,5 +1,5 @@
 #include "base_dll.h"
-#include <Windows.h>
+#include "pe_resource_dll.h"
 #include <iostream>
 #include <map>
 #include <sciterui/file.h>
@@ -7,141 +7,182 @@
 #include <sciterui/path_finder.h>
 #include <sciterui/std_string.h>
 
-using namespace SciterUI;
 
-bool ProcessDir(const Path & targetFile, const Path & sourceDir, const char * subdir, bool verbose)
+namespace
 {
-    typedef std::map<std::string, LPCWSTR> RESOURCE_MAP;
-    RESOURCE_MAP ResourceMap;
 
-    ResourceMap.insert(RESOURCE_MAP::value_type("PNG", L"PNG"));
-    ResourceMap.insert(RESOURCE_MAP::value_type("JPG", L"JPG"));
-    ResourceMap.insert(RESOURCE_MAP::value_type("GIF", L"GIF"));
-    ResourceMap.insert(RESOURCE_MAP::value_type("SVG", L"SVG"));
-    ResourceMap.insert(RESOURCE_MAP::value_type("BMP", RT_BITMAP));
-    ResourceMap.insert(RESOURCE_MAP::value_type("ICO", RT_GROUP_ICON));
-    ResourceMap.insert(RESOURCE_MAP::value_type("CUR", RT_GROUP_CURSOR));
-    ResourceMap.insert(RESOURCE_MAP::value_type("HTM", RT_HTML));
-    ResourceMap.insert(RESOURCE_MAP::value_type("HTML", RT_HTML));
-    ResourceMap.insert(RESOURCE_MAP::value_type("CSS", L"CSS"));
-    ResourceMap.insert(RESOURCE_MAP::value_type("INI", L"LANG"));
-    ResourceMap.insert(RESOURCE_MAP::value_type("LNG", L"LANG"));
+// Win32 resource type IDs used by the language packs.
+constexpr uint32_t RT_BITMAP = 2;
+constexpr uint32_t RT_GROUP_CURSOR = 12;
+constexpr uint32_t RT_GROUP_ICON = 14;
+constexpr uint32_t RT_HTML = 23;
+constexpr uint16_t RESOURCE_LANGUAGE = 0x400; // MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
 
-    HANDLE update = BeginUpdateResourceW(stdstr(targetFile).ToUTF16().c_str(), false);
-    if (update == nullptr)
+struct ResourceType
+{
+    bool isString = false;
+    uint32_t id = 0;
+    const char * name = nullptr;
+};
+
+bool ReadFileBytes(const SciterUI::Path & path, std::vector<uint8_t> & out)
+{
+    SciterUI::File file;
+    if (!file.Open(path, SciterUI::File::modeRead))
     {
-        std::cout << "Error: failed to BeginUpdateResource on \"" << targetFile << "\n" << std::endl;
-        targetFile.FileDelete();
         return false;
     }
 
-    Path targetSearchSpec(sourceDir, "*.*"), findTarget;
-    targetSearchSpec.AppendDirectory(subdir);
-    uint32_t itemCount = 0;
-    PathFinder targetFinder(targetSearchSpec);
-    if (targetFinder.FindFirst(findTarget))
+    const uint64_t length = file.GetLength();
+    if (length > 0xffffffffull)
     {
-        do
-        {
-            RESOURCE_MAP::const_iterator iter = ResourceMap.find(stdstr(findTarget.GetExtension()).ToUpper().c_str());
-            if (iter == ResourceMap.end())
-            {
-                continue;
-            }
-            itemCount += 1;
-            if (itemCount == 20)
-            {
-                itemCount = 0;
-                BOOL closed = ::EndUpdateResource(update, FALSE);
-                if (closed)
-                {
-                    update = ::BeginUpdateResource(stdstr(targetFile).ToUTF16().c_str(), FALSE);
-                    if (update == nullptr)
-                    {
-                        std::cout << "Error: Failed to BeginUpdateResource on \"" << targetFile << "\"" << std::endl;
-                        targetFile.FileDelete();
-                        return false;
-                    }
-                }
-            }
+        return false;
+    }
 
-            const wchar_t * strType = iter->second;
-            File fileData;
-            if (verbose)
+    out.resize((size_t)length);
+    if (length == 0)
+    {
+        return true;
+    }
+    return file.Read(out.data(), (uint32_t)length) == length;
+}
+
+bool CollectDir(const SciterUI::Path & sourceDir, const char * subdir, bool verbose, std::vector<PeResource> & resources)
+{
+    static const std::map<std::string, ResourceType> resourceMap = {
+        {"PNG", {true, 0, "PNG"}},
+        {"JPG", {true, 0, "JPG"}},
+        {"GIF", {true, 0, "GIF"}},
+        {"SVG", {true, 0, "SVG"}},
+        {"BMP", {false, RT_BITMAP, nullptr}},
+        {"ICO", {false, RT_GROUP_ICON, nullptr}},
+        {"CUR", {false, RT_GROUP_CURSOR, nullptr}},
+        {"HTM", {false, RT_HTML, nullptr}},
+        {"HTML", {false, RT_HTML, nullptr}},
+        {"CSS", {true, 0, "CSS"}},
+        {"INI", {true, 0, "LANG"}},
+        {"LNG", {true, 0, "LANG"}},
+    };
+
+    SciterUI::Path targetSearchSpec(sourceDir, "*.*");
+    targetSearchSpec.AppendDirectory(subdir);
+
+    SciterUI::Path findTarget;
+    SciterUI::PathFinder targetFinder(targetSearchSpec);
+    if (!targetFinder.FindFirst(findTarget))
+    {
+        return true;
+    }
+
+    do
+    {
+        const std::string extension = SciterUI::stdstr(findTarget.GetExtension()).ToUpper();
+        auto iter = resourceMap.find(extension);
+        if (iter == resourceMap.end())
+        {
+            continue;
+        }
+
+        const ResourceType & type = iter->second;
+        if (verbose)
+        {
+            if (type.isString)
             {
-                std::cout << "Processing " << (((ULONG_PTR)strType) <= 0xFFFF ? stdstr_f("%d", (WORD)(ULONG_PTR)strType).c_str() : stdstr().FromUTF16(strType).c_str()) << " - " << findTarget.GetNameExtension().c_str() << std::endl;
-            }
-            if (fileData.Open(findTarget, File::modeRead))
-            {
-                uint32_t dataSize = fileData.GetLength();
-                std::unique_ptr<uint8_t[]> data = std::make_unique<uint8_t[]>(dataSize);
-                fileData.Read(data.get(), dataSize);
-                if (!::UpdateResource(update, strType, stdstr(findTarget.GetNameExtension()).ToUpper().ToUTF16().c_str(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPVOID)data.get(), dataSize))
-                {
-                    std::cout << "Error: Failed to UpdateResource on \"" << targetFile << "\"" << std::endl;
-                    targetFile.FileDelete();
-                    return false;
-                }
+                std::cout << "Processing " << type.name << " - " << findTarget.GetNameExtension() << std::endl;
             }
             else
             {
-                std::cout << "Error: Failed to open \"" << findTarget << "\"" << std::endl;
-                targetFile.FileDelete();
-                return false;
+                std::cout << "Processing " << type.id << " - " << findTarget.GetNameExtension() << std::endl;
             }
-        } while (targetFinder.FindNext(findTarget));
-    }
-    ::EndUpdateResource(update, FALSE);
+        }
+
+        PeResource resource;
+        resource.typeIsString = type.isString;
+        resource.typeId = type.id;
+        if (type.isString)
+        {
+            resource.typeName = type.name;
+        }
+        resource.nameIsString = true;
+        resource.name = SciterUI::stdstr(findTarget.GetNameExtension()).ToUpper();
+        resource.language = RESOURCE_LANGUAGE;
+        resource.codePage = 1252;
+
+        if (!ReadFileBytes(findTarget, resource.data))
+        {
+            std::cout << "Error: Failed to open \"" << findTarget << "\"" << std::endl;
+            return false;
+        }
+        resources.push_back(std::move(resource));
+    } while (targetFinder.FindNext(findTarget));
+
     return true;
 }
 
-bool ProcessResource(const Path & sourceDir, const Path & targetFile, bool verbose)
+bool ProcessResource(const SciterUI::Path & sourceDir, const SciterUI::Path & targetFile, bool verbose)
 {
-    {
-        File targetResource;
-        if (!targetResource.Open(targetFile, File::modeCreate | File::modeWrite))
-        {
-            std::cout << "Error: Failed to open \"" << targetFile << "\"" << std::endl;
-            return false;
-        }
-        targetResource.Write(basedll, sizeof(basedll));
-        targetResource.Close();
-    }
-    if (!ProcessDir(targetFile, sourceDir, "html", verbose))
+    std::vector<PeResource> resources;
+    if (!CollectDir(sourceDir, "html", verbose, resources) ||
+        !CollectDir(sourceDir, "image", verbose, resources) ||
+        !CollectDir(sourceDir, "css", verbose, resources))
     {
         return false;
     }
-    if (!ProcessDir(targetFile, sourceDir, "image", verbose))
+
+    if (resources.empty())
     {
+        std::cout << "Error: No resources found in \"" << sourceDir << "\"" << std::endl;
         return false;
     }
-    if (!ProcessDir(targetFile, sourceDir, "css", verbose))
+
+    std::vector<uint8_t> image;
+    if (!BuildPeResourceDll(basedll, sizeof(basedll), resources, image))
     {
+        std::cout << "Error: Failed to build PE resource DLL" << std::endl;
+        return false;
+    }
+
+    SciterUI::File targetResource;
+    if (!targetResource.Open(targetFile, SciterUI::File::modeCreate | SciterUI::File::modeWrite))
+    {
+        std::cout << "Error: Failed to open \"" << targetFile << "\"" << std::endl;
+        return false;
+    }
+    if (!targetResource.Write(image.data(), (uint32_t)image.size()))
+    {
+        std::cout << "Error: Failed to write \"" << targetFile << "\"" << std::endl;
+        targetFile.FileDelete();
         return false;
     }
     return true;
 }
+
+} // namespace
 
 int main(int argc, char * argv[])
 {
     if (argc < 3)
     {
-        std::cout << "Usage: " << Path(argv[0]).GetNameExtension().c_str() << " <source_dir> <output_file>" << std::endl;
+        std::cout << "Usage: " << SciterUI::Path(argv[0]).GetNameExtension().c_str() << " <source_dir> <output_file>" << std::endl;
         return 1;
     }
-    Path sourceDir(argv[1], "");
-    sourceDir.DirectoryNormalize(Path(Path::MODULE_DIRECTORY));
+    SciterUI::Path sourceDir(argv[1], "");
+    sourceDir.DirectoryNormalize(SciterUI::Path(SciterUI::Path::MODULE_DIRECTORY));
     if (!sourceDir.DirectoryExists())
     {
         std::cout << "Error: Source directory does not exist" << std::endl;
         return 1;
     }
-    Path targetFile(argv[2]);
+    SciterUI::Path targetFile(argv[2]);
     if (!targetFile.DirectoryExists())
     {
         std::cout << "Error: Path for the file to be generated does not exist" << std::endl;
         return 1;
     }
-    bool verbose = argc > 3 && _stricmp(argv[3], "-v") == 0;
-    return ProcessResource(sourceDir, targetFile, verbose);
+    const bool verbose = argc > 3 && strcmp(argv[3], "-v") == 0;
+    if (!ProcessResource(sourceDir, targetFile, verbose))
+    {
+        return 1;
+    }
+    return 0;
 }
