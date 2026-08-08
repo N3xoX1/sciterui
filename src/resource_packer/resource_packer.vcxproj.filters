@@ -18,9 +18,15 @@
     <ClCompile Include="resource_packer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pe_resource_dll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base_dll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pe_resource_dll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

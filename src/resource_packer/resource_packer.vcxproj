@@ -28,10 +28,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="pe_resource_dll.cpp" />
     <ClCompile Include="resource_packer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base_dll.h" />
+    <ClInclude Include="pe_resource_dll.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\sciterui\sciterui.vcxproj">
