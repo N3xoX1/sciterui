@@ -41,7 +41,7 @@ class Sciter :
     typedef std::map<std::string, WidgetCallbackInfo> WidgetMap;
 
 public:
-    typedef int __stdcall ElementEventProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    typedef int sui_callback ElementEventProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
 
     /**This structure is used by #SC_ATTACH_BEHAVIOR notification.
      *\copydoc SC_ATTACH_BEHAVIOR **/
@@ -94,7 +94,7 @@ private:
     Sciter & operator=(const Sciter &) = delete;
 
     int AttachWidgetProc(WidgetCallbackInfo * info, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int __stdcall stAttachWidgetProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback stAttachWidgetProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
     ResourceManager m_resourceManager;
     WindowSet m_windows;
     WindowList m_CreatedWindows;

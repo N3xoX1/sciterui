@@ -11,7 +11,7 @@ namespace SciterUI
 {
 class Sciter;
 
-#define SC_CALLBACK __stdcall
+#define SC_CALLBACK sui_callback
 
 class SciterWindow :
     public ISciterWindow
