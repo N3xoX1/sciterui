@@ -2,7 +2,7 @@
 #include "file.h"
 #include "resource_manager.h"
 #include "std_string.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace SciterUI
 {
@@ -31,7 +31,7 @@ bool ModuleDisk::LoadModule(const char * path)
     return true;
 }
 
-bool ModuleDisk::LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t> & data, uint32_t & size)
+bool ModuleDisk::LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t[]> & data, uint32_t & size)
 {
     Path ResPath = GetResPath(name, type);
     if (!ResPath.FileExists())

@@ -488,7 +488,7 @@ LRESULT SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
     }
 
     ResourceManager & manager = m_sciter.GetResourceManager();
-    std::unique_ptr<uint8_t> data;
+    std::unique_ptr<uint8_t[]> data;
     uint32_t dataSize = 0;
     if (!manager.LoadResource(pnmld->uri, data, dataSize))
     {

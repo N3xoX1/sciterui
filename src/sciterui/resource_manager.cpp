@@ -46,7 +46,7 @@ bool ResourceManager::Initialize(const char * baseLanguage, const char * current
     return true;
 }
 
-bool ResourceManager::LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_t> & data, uint32_t & size)
+bool ResourceManager::LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_t[]> & data, uint32_t & size)
 {
     if (m_moduleBase == nullptr || m_moduleCurrent == nullptr)
     {
@@ -70,13 +70,13 @@ bool ResourceManager::LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_
     {
         return false;
     }
-    std::unique_ptr<uint8_t> ResourceData;
+    std::unique_ptr<uint8_t[]> ResourceData;
     uint32_t ResourceSize = 0;
     if (!m_moduleCurrent->LoadResource(uri, iter->second, ResourceData, ResourceSize))
     {
         return false;
     }
-    data.reset(ResourceData.release());
+    data = std::move(ResourceData);
     size = ResourceSize;
     return true;
 }
