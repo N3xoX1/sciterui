@@ -85,7 +85,11 @@ Path ModuleDisk::GetResPath(const sui_wchar * name, const sui_wchar * type)
         }
     }
     sui_ustring fileName = name;
-    if (sui_wcsnicmp(fileName.c_str(), SUI_WSTR("file://"), 7) == 0)
+    if (sui_wcsnicmp(fileName.c_str(), SUI_WSTR("file:///"), 8) == 0)
+    {
+        fileName = fileName.substr(8, fileName.size() - 8);
+    }
+    else if (sui_wcsnicmp(fileName.c_str(), SUI_WSTR("file://"), 7) == 0)
     {
         fileName = fileName.substr(7, fileName.size() - 7);
     }
