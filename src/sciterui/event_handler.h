@@ -2,8 +2,6 @@
 #include <sciter_ui.h>
 #include <stdint.h>
 
-#define SCITER_CALLBACK sui_callback
-
 namespace SciterUI
 {
 
@@ -14,16 +12,16 @@ class EventHandler
 public:
     EventHandler(Sciter & sciter, SCITER_ELEMENT element, void * interfacePtr, uint32_t subscription);
 
-    static int SCITER_CALLBACK ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK DoubleClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK KeyHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK MousedUpDownHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK ResizeHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
-    static int SCITER_CALLBACK ForwardBehaviorHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
-    static int SCITER_CALLBACK StateChangeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
-    static int SCITER_CALLBACK EventSinkHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
+    static int sui_callback ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback DoubleClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback KeyHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback MousedUpDownHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback ResizeHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback ForwardBehaviorHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
+    static int sui_callback StateChangeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
+    static int sui_callback EventSinkHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
 
 private:
     EventHandler() = delete;
