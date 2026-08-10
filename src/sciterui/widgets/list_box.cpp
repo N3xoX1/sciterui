@@ -1,9 +1,11 @@
-#include <widgets/list_box.h>
+#include "sciter_handler_internal.h"
+#include <algorithm>
 #include <map>
 #include <sciter_element.h>
 #include <sciter_handler.h>
-#include "sciter_handler_internal.h"
+#include <string.h>
 #include <vector>
+#include <widgets/list_box.h>
 
 namespace SciterUI
 {

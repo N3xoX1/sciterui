@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <stdint.h>
 
 #ifdef _MSC_VER
 #define suinterface __interface
