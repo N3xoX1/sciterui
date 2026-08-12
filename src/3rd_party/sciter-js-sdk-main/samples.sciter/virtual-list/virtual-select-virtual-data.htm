@@ -6,8 +6,7 @@
 
 import {VirtualSelect} from "virtual-select.js";
 
-const items = [];
-let maxItems = 5000;
+let maxItems = 10000; //84000000;
 
 // select with virtual data source
 class MySelect extends VirtualSelect {
@@ -16,12 +15,8 @@ class MySelect extends VirtualSelect {
     }
 
     itemAt(at) {
-        while (at >= items.length) {
-            const index = items.length;
-            items.push({key: index, text: `item # ${index}`});
-        }
-
-        return items[at];
+        const item = { index:at, text: `item # ${at}` }
+        return item;
     }
 
     totalItems() {
@@ -29,7 +24,7 @@ class MySelect extends VirtualSelect {
     }
 
     indexOf(item) {
-        return items.indexOf(item);
+        return item.index; 
     }
 
     renderItem(item, isCurrent, isSelected) {

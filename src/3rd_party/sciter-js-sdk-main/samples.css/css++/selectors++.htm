@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style>
+
+div {
+   background:sys-yellow;
+   color: sys-yellow-text;
+   padding:1em;
+   margin:1em;
+   border:3px solid black;
+}
+
+
+div:has(>icon) {
+   background:sys-green;
+   color: sys-green-text;
+}
+
+div:has(+ div) {
+  border:3px solid sys-red;
+}
+
+        </style>
+        <script></script>
+    </head>
+    <body>
+
+<h2>:has(...) selector</h2>
+
+    <div>
+      <icon|home />
+      must be green with red border
+    </div>
+
+    <div>
+      must be yellow with black border
+    </div>
+
+
+
+    </body>
+</html>

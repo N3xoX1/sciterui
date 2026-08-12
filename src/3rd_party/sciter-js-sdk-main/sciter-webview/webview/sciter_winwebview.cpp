@@ -256,6 +256,19 @@ namespace webview {
         }
     }
 
+    void sciter_winwebview::set_allowContextMenu(const std::string& val)
+    {
+        if (nullptr == m_winbrowser) {
+            return;
+        }
+        if (m_isEdge) {
+            ((SciterEdgeWebView*)m_winbrowser)->set_allowContextMenu(val);
+        }
+        else {
+            ((SciterIEWebView*)m_winbrowser)->set_allowContextMenu(val);
+        }
+    }
+
     std::string sciter_winwebview::currentSrc() {
         if (nullptr == m_winbrowser) {
             return "";

@@ -37,6 +37,7 @@ namespace webview
         void set_navigation_callback(const navigation_callback_t &cb);
         void set_msg_callback(const msg_callback_t &cb);
         void set_allowWindowOpen(const std::string& val);
+        void set_allowContextMenu(const std::string& val);
 
         std::string currentSrc();
 

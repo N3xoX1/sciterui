@@ -303,6 +303,10 @@ void sciter_wkwebview::set_allowWindowOpen(const std::string& val) {
     m_allowWindowOpen = val;
 }
 
+void sciter_wkwebview::set_allowContextMenu(const std::string& val) {
+    //m_allowContextMenu = val; ???
+}
+
 std::string sciter_wkwebview::currentSrc() {
     WKWebView* webview = (__bridge WKWebView*)m_webview;
     NSString* url = webview.URL.absoluteString;

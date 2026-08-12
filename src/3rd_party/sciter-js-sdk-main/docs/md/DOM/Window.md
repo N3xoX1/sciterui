@@ -272,6 +272,16 @@ move/size window to particular monitor;
 
 _x_, _y_, _width_, _height_ are in DIPs - device independent pixels (a.k.a. CSS pixels).
 
+### shape()
+
+```js
+window.shape( Graphics.Path | Element )
+```
+
+Defines shape of the window. Points out of the path are visually transparent and click-through.
+
+If _element_ is provided as a parameter then the path is constructed from non-transparent areas of the element and/or sub-elements.
+
 ---
 
 ### selectFile()

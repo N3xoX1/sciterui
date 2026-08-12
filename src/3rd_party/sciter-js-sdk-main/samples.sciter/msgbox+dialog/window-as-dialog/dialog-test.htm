@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style>
+
+html:disabled {
+    foreground-color:rgba(0,0,0,0.3);
+    transition: foreground-color linear 300ms;
+    //filter:blur(2px);
+}
+
+        </style>
+        <script>
+
+function showWindowAndWaitUntilClosed() {
+
+  return new Promise((resolve, reject) => {
+
+      document.state.disabled = true;
+
+      let window = new Window({
+        url: __DIR__ + "dialog.htm",
+        alignment:-8,
+        state : Window.WINDOW_SHOWN
+      });
+
+      window.on("close", function(){
+         document.state.disabled = false;
+         resolve(window.retval);
+      });
+  });
+}
+
+document.on("click","button#show", async function() {
+  let retval = await showWindowAndWaitUntilClosed();
+  console.log(JSON.stringify(retval));
+});
+
+        </script>
+    </head>
+    <body>
+
+<button #show>Show dialog</button>
+
+    </body>
+</html>

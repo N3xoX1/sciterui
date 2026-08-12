@@ -332,6 +332,8 @@ SBOOL SCAPI ValueIsNativeFunctor( const VALUE* pval);
     using sciter::astring;
   }
 
+  #pragma warning( pop )
+
 #endif //defined(__cplusplus)
 
 #endif

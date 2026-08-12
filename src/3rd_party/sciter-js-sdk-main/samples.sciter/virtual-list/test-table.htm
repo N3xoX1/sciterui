@@ -10,13 +10,14 @@ body {
 table {
   size:*;
   border:1px solid #ccc;
+  //font-size:16pt;
 }
 
 tbody 
 {
   behavior: virtual-list;
   prototype: Tape;
-  overflow:scroll-indicator;
+  overflow:scroll;
   size:*;
 }
 
@@ -53,7 +54,7 @@ table > tbody > tr:hover {
 ];
 
 class Tape extends Element {
-  nItems = 20000;
+  nItems = 1600;
 
   // scroll down
   appendElements(index, n) {
@@ -125,9 +126,34 @@ class Tape extends Element {
   ["on dblclick at tr"](evt, that) { console.log('i am here!'); }
 }
 
+const tape = document.$("#test");
+
+document.on("click","#go", function() {
+  const position = document.$("#pos");
+  tape.vlist.navigateTo("position",position.value);
+});
+
+document.on("click","#start", function() { tape.vlist.navigateTo("start"); });
+document.on("click","#pageprior", function() { tape.vlist.navigateTo("pageprior"); });
+document.on("click","#itemprior", function() { tape.vlist.navigateTo("itemprior"); });
+document.on("click","#itemnext", function() { tape.vlist.navigateTo("itemnext"); });
+document.on("click","#pagenext", function() { tape.vlist.navigateTo("pagenext"); });
+document.on("click","#end", function() { tape.vlist.navigateTo("end"); });
+
         </script>
     </head>
     <body>
+
+<toolbar>
+  <input|integer #pos value="130" /><button #go>Go</button>
+  <hr/>
+  <button #start><icon|upload /></button>
+  <button #pageprior><icon|arrow-up /></button>
+  <button #itemprior><icon|i-up /></button>
+  <button #itemnext><icon|i-down /></button>
+  <button #pagenext><icon|arrow-down /></button>
+  <button #end><icon|download /></button>
+</toolbar>
 
 <table fixedlayout>
   <thead>
@@ -135,8 +161,7 @@ class Tape extends Element {
     <th>column 2</th>
     <th>column 3</th>
   </thead>
-  <tbody #test>
-  </tbody>
+  <tbody></tbody>
 </table>
 
     </body>

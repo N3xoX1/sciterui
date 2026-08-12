@@ -921,6 +921,7 @@ enum CTL_TYPE
   CTL_PLAINTEXT = 40,        ///< Multiline TextBox + colorizer.
 
   CTL_SELECT_TREE = 41,      ///< TreeView.
+  CTL_SWITCH = 42,           ///< role="switch" ?
 
 };
 

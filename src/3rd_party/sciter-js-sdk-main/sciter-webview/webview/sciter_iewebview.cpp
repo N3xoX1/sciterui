@@ -89,7 +89,10 @@ namespace webview
         /* [in] */ IUnknown *pcmdtReserved,
         /* [in] */ IDispatch *pdispReserved)
     {
-        return m_spDefaultDocHostUIHandler->ShowContextMenu(dwID, ppt, pcmdtReserved, pdispReserved);
+        const char* allow = m_webview->m_allowContextMenu.c_str();
+            return (0 == stricmp("true", allow))
+                ? m_spDefaultDocHostUIHandler->ShowContextMenu(dwID, ppt, pcmdtReserved, pdispReserved)
+                : S_OK;
     }
 
     STDMETHODIMP webbrowser2_com_handler::GetHostInfo(
@@ -268,6 +271,7 @@ namespace webview
                     webView->Create(NULL, &rc, 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
                     webView->CenterWindow();
                     webView->set_allowWindowOpen(m_webview->m_allowWindowOpen);
+                    webView->set_allowContextMenu(m_webview->m_allowContextMenu);
                     webView->load_engine([=](bool succeed) -> void
                         { webView->navigate(strParam); });
                     *(Params->rgvarg[3].pboolVal) = VARIANT_FALSE;
@@ -517,6 +521,11 @@ namespace webview
     void SciterIEWebView::set_allowWindowOpen(const std::string& val)
     {
         m_allowWindowOpen = val;
+    }
+
+    void SciterIEWebView::set_allowContextMenu(const std::string& val)
+    {
+        m_allowContextMenu = val;
     }
 
     std::string SciterIEWebView::currentSrc()

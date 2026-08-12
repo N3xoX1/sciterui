@@ -111,8 +111,9 @@ toc_max_heading_level: 5
 | **mouseup**     | **mouse-up** |
 | **wheel**       | **mouse-wheel** |
 | **mousedragrequest** | **mouse-drag-request** | pressed mouse starts moving after system defined threshold 
-| **dblclick**    | **double-click** | 
-| **tripleclick** | **triple-click** |
+| **singleclick** | **single-click** | \ 
+| **dblclick**    | **double-click** | - either one of these events generated.
+| **tripleclick** | **triple-click** | / 
 
 ### Behaviors
 

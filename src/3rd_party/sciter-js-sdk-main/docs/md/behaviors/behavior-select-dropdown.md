@@ -11,11 +11,11 @@ These elements have behavior:select applied by default:
 
 ## Model
 
-The `<select>` may contain `<option>` elements that can contain arbitrary markup inside.
+The `<select>` may contain `<option>` elements that can contain arbitrary markup inside.
 
-The behavior treats `<option>'s` or any other DOM element with attribute `role="option"` as a selectable entity.
+The behavior treats `<option>'s` or any other DOM element with attribute `role="option"` as a selectable entity.
 
-Selected option will have `:current`  state flag set.
+Selected option will have `:checked` state flag set.
 
 Simple dropdown select:
 
@@ -53,10 +53,10 @@ select > popup { background: ...; }
 
 This behavior knows about:
 
-* `size=integer` - number of visible elements in the list. Note: height of the select element can be overridden by CSS.
-* `name="name"` - standard attribute *name* - name of the input element on a form.
-* `placeholder="text"` or `novalue="text"` - if select has no `<option selected>` initially it will have this text rendered.
-* `as="type"` - defines `<option value="...">` interpretation rule, accepts:
+* `size=integer` - number of visible elements in the list. Note: height of the select element can be overridden by CSS.
+* `name="name"` - standard attribute *name* - name of the input element on a form.
+* `placeholder="text"` or `novalue="text"` - if select has no `<option selected>` initially it will have this text rendered.
+* `as="type"` - defines `<option value="...">` interpretation rule, accepts:
   * `as="auto"`, default value, tries to parse option's value as integer, float, boolean or length value. If parsing fails it returns value as a string.
   * `as="integer"`, tries to parse option's value as integer. If parsing fails it returns value as a string.
   * `as="float"`, tries to parse option's value as float. If parsing fails it returns value as a string.
@@ -79,7 +79,7 @@ Other than standard set of events (mouse, keyboard, focus) behavior:select gener
 
 Other than standard properties of DOM elements the select also supports:
 
-* `select.options` - reference to DOM element that holds `<option>` list, in this case this is the `<popup>` element.
+* `select.options` - reference to DOM element that holds `<option>` list, in this case this is the `<popup>` element.
    
    Use it to populate options at runtime: 
 
@@ -101,14 +101,14 @@ Value of `<select editable>` is always a text - content of the editable caption.
 
 ## Selection change handling in script
 
-### raw `onchange` handler
+### raw `onchange` handler
 
 ```js
 var sel = document.$("select#some");
 sel.onchange = function() { var v = this.value; ... }
 ```
 
-### `on()` subscription
+### `on()` subscription
 
 ```js
 var sel = document.$("select#some");

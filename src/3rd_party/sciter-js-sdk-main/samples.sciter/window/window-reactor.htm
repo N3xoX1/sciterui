@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style></style>
+        <script|module>
+
+const windowDoc = <html window-width="640px" window-height="480px">
+  <head>
+    <style src={__DIR__ + "window-reactor.css"}/>
+  </head>
+  <body>
+    <p>Hello World</p>
+  </body>
+</html>;
+
+
+document.on("click","#show", function() {
+  new Window({html:windowDoc});
+});
+
+        </script>
+    </head>
+    <body>
+
+      <button#show>Show Reactor Window</button>
+
+    </body>
+</html>

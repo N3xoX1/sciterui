@@ -17,11 +17,6 @@
 
 #include "sciter-x-primitives.h"
 
-
-#if defined(SCITER_LITE)
-  #define WINDOWLESS
-#endif
-
   enum GFX_LAYER
   {
     GFX_LAYER_GDI = 1, GFX_LAYER_CG = 1, /*Mac OS*/ GFX_LAYER_CAIRO = 1, /*GTK*/
@@ -93,8 +88,6 @@
   #define SCITER_DLL_NAME "libsciter.so"
 
 #elif defined(ANDROID)
-
-  #define WINDOWLESS
 
   #define HWINDOW LPVOID
 

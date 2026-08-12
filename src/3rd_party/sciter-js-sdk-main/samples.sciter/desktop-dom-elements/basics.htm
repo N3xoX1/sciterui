@@ -1,0 +1,86 @@
+﻿<html>
+    <head>
+        <title>Test</title>
+        <style>
+
+div#windowed {
+    background:gold;
+    width:320px;
+    height:200px;
+    //border:3px solid;
+}
+
+div#windowed > caption {
+    visibility: none;
+    width:*;
+    border-bottom: 1px solid;
+}
+div#windowed:popup > caption {
+    visibility: visible;
+}
+
+        </style>
+        <script>
+
+const windowed = document.$("div#windowed");
+const resizable = document.$("#resizable");
+const detached = document.$("#detached");
+const dimensions = document.$("#dimensions");
+const buttonDockBack = document.$("#dock-back");
+
+let popupWindow;
+
+document.on("click","#show", function() {
+
+   const [x,y] = windowed.state.box("position", "inner","window");
+
+   const popupWindowAttachment = detached.state.checked ? "detached" : "attached";
+
+   popupWindow = windowed.takeOff({ 
+     x, y, 
+     window: popupWindowAttachment, 
+     isResizable: resizable.state.checked 
+   });
+   popupWindow.on("close",() => { 
+      popupWindow = null; 
+      buttonDockBack.state.disable = true; 
+   })
+   popupWindow.on("size",() => { 
+      const [w,h] = popupWindow.root.state.box("dimension","border");
+      dimensions.content(<>{w}×{h}</>);
+   });
+
+   buttonDockBack.state.disable = false;
+
+});
+
+document.on("click","button#dock-back", function() {
+    if(popupWindow) popupWindow.close();
+   //or windowed.takeOff();
+});
+
+document.on("click","button#set-passthrough", function() {
+    if(popupWindow) popupWindow.isMousePassthrough = true;
+});
+
+
+        </script>
+    </head>
+    <body>
+
+<button|checkbox #resizable>as resizable</button>
+<button|checkbox #detached>as detached</button>
+
+<button #show>Show</button>
+
+<button #dock-back disabled>Dock it back</button>
+
+<div#windowed>
+  <caption role="window-caption">Resizable window caption</caption>
+  This is DOM element
+  <p#dimensions />
+</div>
+
+
+    </body>
+</html>

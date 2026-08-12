@@ -1,0 +1,93 @@
+<html window-frame="extended"
+      window-resizable="true"
+      window-minimizable="true"
+      window-maximizable="true"
+      window-blurbehind="auto" 
+      window-icon="sd.svg"
+      theme="auto">
+    <head>
+        <title>Sciter greets D lang!</title>
+        <style>
+
+/* normally window-frame="extended" has just clear window surface but with borders,
+   and this extended-chrome.css will cause creation of <header> with window caption/min/max/close buttons */ 
+@import url(sciter:extended-chrome.css);
+
+body {
+  margin:0;
+}
+
+h1, div { text-align:center; }
+
+dl {
+    flow: row(dt, dd);
+    border-spacing: 0.5em;  
+    text-align:start;
+    width:max-content;
+    margin:0 *;
+}
+
+dl > dt { width:max-content; }
+dl > dd { font-weight:bold; width:max-content; }
+
+dl > header {
+    border-bottom: 1px solid;
+}
+
+clock {
+    behavior: custom-drawing-controller; // custom drawing ctl, see samples/drawingcontroller.d
+    display:block; // like a <div>
+    size:*; // spans whole available space 
+}
+
+        </style>
+        <script>
+
+// React'or component, showing spinner or string
+class AsyncResult extends Element {
+    result;
+
+    async componentDidMount() {
+      // calling D's asyncFunction and awaiting for its result (promise resolution)
+      let r = await asyncFunction();
+      this.componentUpdate({result:r}); // set result to r, will cause re-render
+    }
+
+    render() {
+      // render that busy spinner while no result
+      return <span>
+        { this.result || <img src="sciter:busy.png"/> }
+      </span>
+    }
+}
+
+let elMessage;
+
+document.body.append(<dl>
+    <header>Compiler:</header> 
+    <dt>name:</dt>    <dd>{Compiler.name}</dd>
+    <dt>version:</dt> <dd>{Compiler.verMajor}.{Compiler.verMinor}</dd>
+    <header>Tests:</header> 
+    <dt>D's adder:</dt>       <dd>{adder(10,32)}</dd>
+    <dt>D calls jsFunc:</dt>  <dd var={elMessage}>?</dd>
+    <dt>D async func:</dt>    <dd><AsyncResult /></dd>    
+</dl>);
+
+
+function jsFunc(v) {
+    elMessage.textContent  = v;
+    return "From JS to D with love";
+}
+
+        </script>
+    </head>
+    <body>
+
+<h1>The D Clock</h1>
+
+<clock/>
+
+<div>Button to <button #test>Test</button></div>
+
+    </body>
+</html>

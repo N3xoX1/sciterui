@@ -54,7 +54,7 @@ typedef struct _ISciterAPI {
   UINT    SCFN( SciterVersion )(UINT n);
   SBOOL    SCFN( SciterDataReady )(HWINDOW hwnd,LPCWSTR uri,LPCBYTE data, UINT dataLength);
   SBOOL    SCFN( SciterDataReadyAsync )(HWINDOW hwnd,LPCWSTR uri, LPCBYTE data, UINT dataLength, LPVOID requestId);
-#if defined(WINDOWS) && !defined(WINDOWLESS)
+#if defined(WINDOWS)
   LRESULT SCFN( SciterProc )(HWINDOW hwnd, UINT msg, WPARAM wParam, LPARAM lParam); // use SciterProcND + DefWindowProc
   LRESULT SCFN( SciterProcND )(HWINDOW hwnd, UINT msg, WPARAM wParam, LPARAM lParam, SBOOL* pbHandled);
 #else
@@ -75,40 +75,24 @@ typedef struct _ISciterAPI {
   SBOOL    SCFN( SciterCall )(HWINDOW hWnd, LPCSTR functionName, UINT argc, const SCITER_VALUE* argv, SCITER_VALUE* retval);
   SBOOL    SCFN( SciterEval )( HWINDOW hwnd, LPCWSTR script, UINT scriptLength, SCITER_VALUE* pretval);
   VOID     SCFN( SciterUpdateWindow)(HWINDOW hwnd);
-#if defined(WINDOWS) && !defined(WINDOWLESS)
-  SBOOL    SCFN(SciterTranslateMessage)(MSG* lpMsg);
-#else
+  
   LPVOID   SciterTranslateMessage; // NULL
-#endif
+
   SBOOL    SCFN( SciterSetOption )(HWINDOW hWnd, UINT option, UINT_PTR value );
-  VOID    SCFN( SciterGetPPI )(HWINDOW hWndSciter, UINT* px, UINT* py);
+  VOID     SCFN( SciterGetPPI )(HWINDOW hWndSciter, UINT* px, UINT* py);
   SBOOL    SCFN( SciterGetViewExpando )( HWINDOW hwnd, VALUE* pval );
-#if defined(WINDOWS) && !defined(WINDOWLESS)
-  SBOOL    SCFN( SciterRenderD2D )(HWINDOW hWndSciter, IUnknown* /*ID2D1RenderTarget**/ prt);
-  SBOOL    SCFN( SciterD2DFactory )(IUnknown** /*ID2D1Factory ***/ ppf);
-  SBOOL    SCFN( SciterDWFactory )(IUnknown** /*IDWriteFactory ***/ ppf);
-#else
-  LPVOID   SciterRenderD2D;
-  LPVOID   SciterD2DFactory;
-  LPVOID   SciterDWFactory;
-#endif
+
+  LPVOID   SciterRenderD2D;  // N/A
+  LPVOID   SciterD2DFactory; // N/A
+  LPVOID   SciterDWFactory;  // N/A
+
   SBOOL    SCFN( SciterGraphicsCaps )(LPUINT pcaps);
   SBOOL    SCFN( SciterSetHomeURL )(HWINDOW hWndSciter, LPCWSTR baseUrl);
-#if defined(OSX) && !defined(WINDOWLESS)
-  HWINDOW SCFN( SciterCreateNSView )( LPRECT frame ); // returns NSView*
-#else
-  LPVOID SciterCreateNSView; // NULL
-#endif
-#if defined(LINUX) && !defined(WINDOWLESS)
-  HWINDOW SCFN( SciterCreateWidget )( LPRECT frame ); // returns GtkWidget
-#else
-  LPVOID SciterCreateWidget; // NULL
-#endif
-#if !defined(WINDOWLESS)
+
+  LPVOID   SciterCreateNSView; // NULL
+  LPVOID   SciterCreateWidget; // NULL
+
   HWINDOW SCFN( SciterCreateWindow )( UINT creationFlags,LPRECT frame, LPVOID, LPVOID, HWINDOW parent);
-#else 
-  LPVOID SciterCreateWindow; // NULL
-#endif
 
   VOID    SCFN( SciterSetupDebugOutput )(
                 HWINDOW               hwndOrNull,// HWINDOW or null if this is global output handler
@@ -272,15 +256,9 @@ typedef struct _ISciterAPI {
   LPSciterGraphicsAPI SCFN( GetSciterGraphicsAPI )();
   LPSciterRequestAPI SCFN( GetSciterRequestAPI )();
 
-#if defined(WINDOWS) && !defined(WINDOWLESS)
-  SBOOL SCFN( SciterCreateOnDirectXWindow ) (HWINDOW hwnd, IUnknown* pSwapChain); // IDXGISwapChain
-  SBOOL SCFN( SciterRenderOnDirectXWindow ) (HWINDOW hwnd, HELEMENT elementToRenderOrNull, SBOOL frontLayer);
-  SBOOL SCFN( SciterRenderOnDirectXTexture ) (HWINDOW hwnd, HELEMENT elementToRenderOrNull, IUnknown* surface); // IDXGISurface
-#else
   LPVOID SciterCreateOnDirectXWindow;
   LPVOID SciterRenderOnDirectXWindow;
   LPVOID SciterRenderOnDirectXTexture;
-#endif
 
   SBOOL SCFN(SciterProcX)(HWINDOW hwnd, SCITER_X_MSG* pMsg ); // returns TRUE if handled
 
@@ -307,6 +285,8 @@ typedef struct _ISciterAPI {
   proc_ptr_t   SCFN(SciterEGLGetProcAddress)(char const* procName);
   SCDOM_RESULT SCFN(SciterEGLSendEvent)(HELEMENT he, UINT eventCode, UINT_PTR reason);
   SCDOM_RESULT SCFN(SciterRequestAnimationFrameEvent)(HELEMENT he, UINT eventCode, UINT_PTR reason);
+
+  SCDOM_RESULT SCFN(SciterRequestPaint)(HELEMENT he);
 
 } ISciterAPI;
 
@@ -536,13 +516,13 @@ inline ISciterAPI *_SAPI(ISciterAPI *ext) {
   inline   UINT    SCAPI SciterVersion (UINT n) { return SAPI()->SciterVersion (n); }
   inline   SBOOL    SCAPI SciterDataReady (HWINDOW hwnd,LPCWSTR uri,LPCBYTE data, UINT dataLength) { return SAPI()->SciterDataReady (hwnd,uri,data,dataLength); }
   inline   SBOOL    SCAPI SciterDataReadyAsync (HWINDOW hwnd,LPCWSTR uri, LPCBYTE data, UINT dataLength, LPVOID requestId) { return SAPI()->SciterDataReadyAsync (hwnd,uri, data, dataLength, requestId); }
-#if defined(WINDOWS) && !defined(WINDOWLESS)
+#if defined(WINDOWS)
   inline   LRESULT SCAPI SciterProc (HWINDOW hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { return SAPI()->SciterProc (hwnd,msg,wParam,lParam); }
   inline   LRESULT SCAPI SciterProcND (HWINDOW hwnd, UINT msg, WPARAM wParam, LPARAM lParam, SBOOL* pbHandled) { return SAPI()->SciterProcND (hwnd,msg,wParam,lParam,pbHandled); }
 #endif
   inline   SBOOL    SCAPI SciterLoadFile (HWINDOW hWndSciter, LPCWSTR filename) { return SAPI()->SciterLoadFile (hWndSciter,filename); }
   inline   SBOOL    SCAPI SciterLoadHtml (HWINDOW hWndSciter, LPCBYTE html, UINT htmlSize, LPCWSTR baseUrl) { return SAPI()->SciterLoadHtml (hWndSciter,html,htmlSize,baseUrl); }
-  inline   VOID    SCAPI SciterSetCallback (HWINDOW hWndSciter, LPSciterHostCallback cb, LPVOID cbParam) { SAPI()->SciterSetCallback (hWndSciter,cb,cbParam); }
+  inline   VOID     SCAPI SciterSetCallback (HWINDOW hWndSciter, LPSciterHostCallback cb, LPVOID cbParam) { SAPI()->SciterSetCallback (hWndSciter,cb,cbParam); }
   inline   SBOOL    SCAPI SciterSetMasterCSS (LPCBYTE utf8, UINT numBytes) { return SAPI()->SciterSetMasterCSS (utf8,numBytes); }
   inline   SBOOL    SCAPI SciterAppendMasterCSS (LPCBYTE utf8, UINT numBytes) { return SAPI()->SciterAppendMasterCSS (utf8,numBytes); }
   inline   SBOOL    SCAPI SciterSetCSS (HWINDOW hWndSciter, LPCBYTE utf8, UINT numBytes, LPCWSTR baseUrl, LPCWSTR mediaType) { return SAPI()->SciterSetCSS (hWndSciter,utf8,numBytes,baseUrl,mediaType); }
@@ -557,25 +537,14 @@ inline ISciterAPI *_SAPI(ISciterAPI *ext) {
   inline   VOID     SCAPI SciterSetVariable(HWINDOW hwndOrNull, LPCSTR name, const VALUE* pvalToSet) { SAPI()->SciterSetVariable(hwndOrNull, name, pvalToSet); }
   inline   VOID     SCAPI SciterGetVariable(HWINDOW hwndOrNull, LPCSTR name, VALUE* pval) { SAPI()->SciterGetVariable(hwndOrNull, name, pval); }
 
-#if defined(WINDOWS) && !defined(WINDOWLESS)
-  inline   SBOOL    SCAPI SciterTranslateMessage (MSG* lpMsg) { return SAPI()->SciterTranslateMessage (lpMsg); }
-#endif
   inline  SBOOL    SCAPI SciterSetOption (HWINDOW hWnd, UINT option, UINT_PTR value ) { return SAPI()->SciterSetOption (hWnd,option,value ); }
-  inline  VOID    SCAPI SciterGetPPI (HWINDOW hWndSciter, UINT* px, UINT* py) { SAPI()->SciterGetPPI (hWndSciter,px,py); }
+  inline  VOID     SCAPI SciterGetPPI (HWINDOW hWndSciter, UINT* px, UINT* py) { SAPI()->SciterGetPPI (hWndSciter,px,py); }
   inline  SBOOL    SCAPI SciterGetViewExpando ( HWINDOW hwnd, VALUE* pval ) { return SAPI()->SciterGetViewExpando ( hwnd, pval ); }
-#if defined(WINDOWS) && !defined(WINDOWLESS)
-  inline  SBOOL    SCAPI SciterRenderD2D (HWINDOW hWndSciter, IUnknown* /*ID2D1RenderTarget**/ prt) { return SAPI()->SciterRenderD2D (hWndSciter,prt); }
-  inline  SBOOL    SCAPI SciterD2DFactory (IUnknown** /*ID2D1Factory ***/ ppf) { return SAPI()->SciterD2DFactory (ppf); }
-  inline  SBOOL    SCAPI SciterDWFactory (IUnknown** /*IDWriteFactory ***/ ppf) { return SAPI()->SciterDWFactory (ppf); }
-#endif
+
   inline  SBOOL    SCAPI SciterGraphicsCaps (LPUINT pcaps) { return SAPI()->SciterGraphicsCaps (pcaps); }
   inline  SBOOL    SCAPI SciterSetHomeURL (HWINDOW hWndSciter, LPCWSTR baseUrl) { return SAPI()->SciterSetHomeURL (hWndSciter,baseUrl); }
-#if defined(OSX) && !defined(WINDOWLESS)
-  inline  HWINDOW SCAPI SciterCreateNSView ( LPRECT frame ) { return SAPI()->SciterCreateNSView ( frame ); }
-#endif
-#if !defined(WINDOWLESS)
+
   inline  HWINDOW SCAPI SciterCreateWindow ( UINT creationFlags,LPRECT frame, LPVOID, LPVOID, HWINDOW parent) { return SAPI()->SciterCreateWindow (creationFlags,frame,NULL, NULL, parent); }
-#endif
 
   inline  INT_PTR SCAPI SciterExec(UINT appCmd, UINT_PTR p1, UINT_PTR p2) { return SAPI()->SciterExec(appCmd, p1, p2); }
   inline  INT_PTR SCAPI SciterWindowExec(HWINDOW hwnd,UINT wndCmd, UINT_PTR p1, UINT_PTR p2) { return SAPI()->SciterWindowExec(hwnd, wndCmd, p1, p2); }
@@ -709,13 +678,7 @@ inline ISciterAPI *_SAPI(ISciterAPI *ext) {
   inline UINT SCAPI ValueNativeFunctorSet (VALUE* pval, NATIVE_FUNCTOR_INVOKE*  pinvoke, NATIVE_FUNCTOR_RELEASE* prelease, VOID* tag ) { return SAPI()->ValueNativeFunctorSet ( pval, pinvoke,prelease,tag); }
   inline SBOOL SCAPI ValueIsNativeFunctor ( const VALUE* pval) { return SAPI()->ValueIsNativeFunctor (pval); }
 
-#if defined(WINDOWS) && !defined(WINDOWLESS)
-  inline SBOOL SCAPI SciterCreateOnDirectXWindow(HWINDOW hwnd, IUnknown* pSwapChain) { return SAPI()->SciterCreateOnDirectXWindow(hwnd,pSwapChain); }
-  inline SBOOL SCAPI SciterRenderOnDirectXWindow(HWINDOW hwnd, HELEMENT elementToRenderOrNull, SBOOL frontLayer) { return SAPI()->SciterRenderOnDirectXWindow(hwnd,elementToRenderOrNull,frontLayer); }
-  inline SBOOL SCAPI SciterRenderOnDirectXTexture(HWINDOW hwnd, HELEMENT elementToRenderOrNull, IUnknown* surface) { return SAPI()->SciterRenderOnDirectXTexture(hwnd,elementToRenderOrNull,surface); }
-#endif
-
-  inline   SBOOL SCAPI SciterProcX(HWINDOW hwnd, SCITER_X_MSG* pMsg) { return SAPI()->SciterProcX(hwnd, pMsg); }
+  inline SBOOL SCAPI SciterProcX(HWINDOW hwnd, SCITER_X_MSG* pMsg) { return SAPI()->SciterProcX(hwnd, pMsg); }
 #ifdef __cplusplus
   template<class MSG>
   inline   SBOOL SCAPI SciterProcX(HWINDOW hwnd, const MSG &msg) {
@@ -747,5 +710,10 @@ inline ISciterAPI *_SAPI(ISciterAPI *ext) {
   inline SCDOM_RESULT SCAPI SciterRequestAnimationFrameEvent(HELEMENT he, UINT eventCode, UINT_PTR reason) {
     return SAPI()->SciterRequestAnimationFrameEvent(he, eventCode, reason);
   }
+
+  inline SCDOM_RESULT SCAPI SciterRequestPaint(HELEMENT he) {
+    return SAPI()->SciterRequestPaint(he);
+  }
+  
 
 #endif

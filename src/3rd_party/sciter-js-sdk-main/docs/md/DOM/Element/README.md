@@ -779,25 +779,33 @@ popup positioning can be defined in CSS by [popup-position](../../CSS/properties
 popup animation can be defined in CSS by [popup-animation](../../CSS/properties#popupanimation). 
 ::: 
 
+This method returns [PopupWindow](#PopupWindow) object.
 
 ### takeOff()
 
 ```js
-element.takeOff(params:object)
+element.takeOff(params:object): PopupWindow
 element.takeOff()
 ```
 
-Make the element "airborn" - to be replaced outside of host window, *params* are:
+Make the element "airborn" - to be replaced outside of host window, *params* is an object that may contain following fields:
 
-- `params.x`,`params.y` - numeric, element coordinates, *screen* pixels - new position of DOM element;
-- `params.width`,`params.height`  - optional, numeric, new dimensions in *screen* pixels;
+- `x`,`y` - numeric, element coordinates, *screen* pixels - new position of DOM element;
+- `width`,`height`  - optional, numeric, new dimensions in *screen* pixels;
 - `relativeTo` - string, defines meaning of *x* and *y*, one of:   "screen","document","window","parent" or "self"
 - `window` - string, defines type of window that will host the element, one of: 
   + "attached" - attached window, will move in sync with the host window; 
   + "detached" - detached window, position will be independent from the host window;
   + "popup" - same as "detached" window, put also will be placed as topmost - on top of other windows on desktop.
+- `isTopmost` - bool, true - the element's window is topmost;
+- `isResizable` - bool, true - the element's window is resizable by the user;
+- `isMousePassthrough` - bool, true - the element's window is completely transparent for mouse events;
 
-takeOff() call without parameters lands the element back - brings it to its normal position it was before it was taken off. 
+
+This method returns [PopupWindow](#PopupWindow) object.
+
+
+`takeOff()` call without parameters lands the element back - brings it to its normal position it was before it was taken off. 
 
 ---
 
@@ -992,3 +1000,17 @@ Static, class method, constructor of Element instances:
 Element.create(JSX | tag:string) : Element
 ```
 returns an element constructed either from JSX expression (vnode) or by tag name. In later case it behaves exactly as `document.createElement(tag)`.
+
+# PopupWindow
+
+Object returned by `popup()` and `takeOff()` methods, has the following properties and methods:
+
+- `root` - Element, the element that this window wraps;
+- `anchor` - Element | null, the element that the `popup()` method was invoked for;
+- `isTopmost` - bool, true - the window is topmost;
+- `isResizable` - bool, true - the window is resizable by the user;
+- `isMousePassthrough` - bool, true - the element's window is completely transparent for mouse events;
+- `isValid` - bool, true - the window is valid / shown;
+- `on("close"|"move"|"size", callback)` - method, subscribe to "close", "move" or "size" events;
+- `close()` - method, closes this popup window;
+

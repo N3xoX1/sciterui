@@ -32,9 +32,8 @@ export async function store() {
 
 async function restore() {
     let buffer;
-
     try {
-        buffer = await sys.fs.readFile(path, "r");
+        buffer = await sys.fs.$readFile(path, "r");
     }
     catch (error) {
         return false;
@@ -58,17 +57,17 @@ export function add(persistable) {
 // window position persistence
 add({
     store(data) {
-        const [x, y, w, h] = Window.this.box("xywh", "border", "screen", true);
-        data.window = {left: x, top: y, width: w, height: h};
+        let [x,y,w,h] = Window.this.box("xywh","border","monitor");
+        data.window = {left:x,top:y,width:w,height:h, monitor:Window.this.monitor};
     },
     restore(data) {
         if (data.window) {
-            const x = Math.max(data.window.left, 0);
-            const y = Math.max(data.window.top, 0);
-            const w = Math.max(data.window.width, 800);
-            const h = Math.max(data.window.height, 600);
-            Window.this.move(x, y); // move to monitor
-            Window.this.move(x, y, w, h); // replace on monitor
+            var x = Math.max(data.window.left,0);
+            var y = Math.max(data.window.top,0);
+            var w = Math.max(data.window.width,800);
+            var h = Math.max(data.window.height,600); 
+            var monitor = data.window.monitor ?? 0;
+            Window.this.moveTo(monitor,x,y,w,h); // replace on monitor
         }
     },
 });

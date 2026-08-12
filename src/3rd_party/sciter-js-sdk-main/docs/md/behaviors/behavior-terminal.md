@@ -16,6 +16,7 @@ By default the behavior is applied to `<terminal>` element (Sciter specific)
 
 * `rows` - integer, number of rows in terminal buffer  (lines in scrollable buffer) ;
 * `columns` - integer, number of columns in terminal buffer (like characters in screen width);
+* `selectable` - boolean, if defined then the terminal will support selection by mouse;
 
 If `columns` attribute is not defined then number of columns is calculated according current width of the element. 
 

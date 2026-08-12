@@ -1,0 +1,119 @@
+
+@set markdown {
+
+  aside.admonition {
+    padding: 1em;
+    border-radius: 0.5em;
+    border-left: 4px solid var(fg-color);
+    background-color: morph(var(fg-color),lightness:0.95);
+    padding:0.5em 0 0.5em 3em;
+    margin: 1em 0;
+  }
+
+  aside.admonition > header {
+    font-weight:bold;
+    text-transform: capitalize;
+    line-height:2em;
+    padding: 0 0 0.5em 3em;
+    margin-top: 0.25em;
+    margin-left: -3em;
+    background-repeat: no-repeat;
+    background-position: 0.5em 0;
+    background-size:2em;
+    text-transform: uppercase;
+    //color: var(fg-color);
+    fill: var(fg-color);
+  }
+
+  aside.admonition|note { var(fg-color):#838688;  }
+  aside.admonition|tip { var(fg-color): #0b8229;  }
+  aside.admonition|info,
+  aside.admonition|important { var(fg-color):#3b8ba5; }
+  aside.admonition|warning { var(fg-color):#d37900; }
+  aside.admonition|caution,
+  aside.admonition|danger { var(fg-color):#c50f00; }
+  
+  aside.admonition|note > header { background-image: icon(note-note); }
+  aside.admonition|tip > header { background-image: icon(note-tip); }
+  aside.admonition|important > header,
+  aside.admonition|info > header { background-image: icon(note-info); }
+  aside.admonition|warning > header { background-image: icon(note-warning); }
+  aside.admonition|caution > header,
+  aside.admonition|danger > header { background-image: icon(note-danger); }
+  
+  blockquote {
+    margin: 1em 0;
+    padding: 0 0 0 1em;
+    border-left: 4px solid #8ac3fc;
+  }
+
+  table {
+    border-collapse: collapse;
+    border-spacing:0;
+    margin:1em 0;
+  }
+
+  table td, table th { 
+    padding:0.25em 1em;
+    line-height:1.4em;
+    border:1px solid #c8cdd2; 
+  }
+
+  table th {
+    font-weight:bold;
+    text-align:center;
+  }
+
+  pre {
+    background: #373b40;
+    padding: 1em;
+    border-radius: 0.5em;
+    color:#fff;
+  }
+
+  code {
+    background: #eee;
+  }
+
+  dl {
+    flow: row(dt, dd);
+    border-spacing-x: 1em;
+  }
+
+
+  dl > dt {
+    font-weight:bold;
+    white-space:no-wrap;
+  }
+
+  dl > dd {
+    width:*;
+    margin:0;
+    padding:0;
+  }
+
+  li.checkbox {
+    foreground-size: 1.2em;
+    foreground-position: 0 0;
+    foreground-repeat: no-repeat;
+    foreground-image: icon(box-minus-o);
+    fill: currentcolor;
+    padding-left: 1.5em;
+  }
+
+  ul > li.checkbox {
+    list-style-type:none;
+    margin-left:-1.5em;
+  }
+
+  li.checkbox.on { foreground-image: icon(box-tick-o); }
+  li.checkbox.off { foreground-image: icon(box); }
+  li.checkbox.mixed { foreground-image: icon(box-minus-o); }
+
+  mark { background: gold; }
+
+  /* demo of custom classes */
+  .sample { background:gold; padding:0.5em; }
+  .another-sample { outline:2px solid red; }
+
+}

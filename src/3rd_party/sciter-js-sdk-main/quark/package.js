@@ -44,7 +44,7 @@ function checkFolder(folderPath, forWriting = false) {
 }
 
 async function convertSvgToIco(inp, outp) {
-  const args = ["magick", "-density", "256x256", "-background", "transparent", inp, "-define", "icon:auto-resize", "-colors", "256", outp];
+  const args = ["magick", "-density", "256x256", "-background", "transparent", inp, "-define", "icon:auto-resize=16,24,32,40,48,64,96,128,16,32,48,128", "-colors", "256", outp];
   const r = await LogRunner.run(args);
   if (r != 0) throw "convertSvgToIco: failed to produce .ICO file";
 }
@@ -110,7 +110,6 @@ async function convertSvgToIcns(inf, outp) {
      h = Length.ppx(h);
      let svg = await Graphics.Image.load(pathin);
      console.assert(svg,`cannot read ${svg}`);
-     console.log(svg);
      let out = new Graphics.Image(w,h,gfx => { gfx.draw(svg, {x:0,y:0,width:w,height:h}) });
      let bytes = out.toBytes();
      let file = await sys.fs.open(pathout,"w");

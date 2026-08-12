@@ -565,11 +565,11 @@ typedef enum SCITER_RT_OPTIONS
  } SCITER_WINDOW_CMD;
 
  typedef enum SCITER_WINDOW_STATE {
-   SCITER_WINDOW_STATE_CLOSED = 0, // close window
-   SCITER_WINDOW_STATE_SHOWN = 1,
-   SCITER_WINDOW_STATE_MINIMIZED = 2,
-   SCITER_WINDOW_STATE_MAXIMIZED = 3,
-   SCITER_WINDOW_STATE_HIDDEN = 4,
+   SCITER_WINDOW_STATE_CLOSED = 0, // not a window
+   SCITER_WINDOW_STATE_HIDDEN = 1,
+   SCITER_WINDOW_STATE_SHOWN = 2,
+   SCITER_WINDOW_STATE_MINIMIZED = 3,
+   SCITER_WINDOW_STATE_MAXIMIZED = 4,
    SCITER_WINDOW_STATE_FULL_SCREEN = 5,
  } SCITER_WINDOW_STATE;
 
@@ -740,14 +740,13 @@ typedef enum SCITER_CREATE_WINDOW_FLAGS {
    //SW_TOOL       = (1 << 3), // is tool window
    //SW_CONTROLS   = (1 << 4), // has minimize / maximize buttons
    //SW_GLASSY     = (1 << 5), // glassy window - supports "Acrylic" on Windows and "Vibrant" on MacOS. 
-   SW_ALPHA      = (1 << 6), // transparent window ( e.g. WS_EX_LAYERED on Windows )
+   //SW_ALPHA      = (1 << 6), // transparent window ( e.g. WS_EX_LAYERED on Windows )
    SW_MAIN       = (1 << 7), // main window of the app, will terminate the app on close
    SW_POPUP      = (1 << 8), // the window is created as topmost window.
    SW_ENABLE_DEBUG = (1 << 9), // make this window inspector ready
    //SW_OWNS_VM      = (1 << 10), // it has its own script VM
 } SCITER_CREATE_WINDOW_FLAGS;
 
-#if !defined(WINDOWLESS)
 /** Create sciter window.
  *  On Windows returns HWND of either top-level or child window created.
  *  On OS X returns NSView* of either top-level window or child view .
@@ -765,7 +764,6 @@ typedef enum SCITER_CREATE_WINDOW_FLAGS {
                                             LPVOID reserved2, /// set to NULL
                                             HWINDOW parent);
 
-#endif
 
 /** SciterSetupDebugOutput - setup debug output function.
  *
@@ -779,7 +777,7 @@ typedef enum OUTPUT_SUBSYTEMS
    OT_DOM = 0,       // html parser & runtime
    OT_CSSS,          // csss! parser & runtime
    OT_CSS,           // css parser
-   OT_TIS,           // TIS parser & runtime
+   OT_SCRIPT,        // JS parser & runtime
 } OUTPUT_SUBSYTEMS;
 
 typedef enum OUTPUT_SEVERITY

@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+
+
+    body {
+      background-image: url(https://eol.jsc.nasa.gov/DatabaseImages/ISD/highres/AS11/AS11-40-5902.JPG);
+      background-size: cover;
+    }
+
+    div 
+    {
+      position:parent;
+      prototype: MovableElement;
+      width:30vw;
+      height:30vh;
+      border-radius: 48px;
+      padding:40px;
+      left:0px;
+      top:0px;
+      color:#fff;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(128, 128, 128, 0.4));
+      box-shadow: inset 2px 4px 28px white,
+                  inset -2px -4px 14px black;
+    }
+
+    .filtered {
+      backdrop-filter:  fe-color-matrix(type:matrix, values:
+                              1 0 0 0 0
+                              0 0 0 0 0
+                              0 0 0 0 0
+                              0 0 0 1 0, result:"r1") 
+                        fe-offset(in:"r1",dx:3px, dy:0, result:"r2")
+                        fe-gaussian-blur(in:"r2", std-deviation:1.5,result:"redChannel")
+
+                        fe-color-matrix(type:matrix, values:
+                              0 0 0 0 0
+                              0 1 0 0 0
+                              0 0 0 0 0
+                              0 0 0 1 0, result: "g1") 
+                        fe-gaussian-blur(in:"g1",std-deviation:0.5,result:"greenChannel")
+
+                        fe-color-matrix(type:matrix, values:
+                              0 0 0 0 0
+                              0 0 0 0 0
+                              0 0 1 0 0
+                              0 0 0 1 0, result: "b1") 
+                        fe-offset(in:"b1", dx:-3px, dy:0, result:"b2")
+                        fe-gaussian-blur(in:"b2",std-deviation:1.5, result:"blueChannel")
+                        
+                        fe-blend(in:"redChannel", in2:"greenChannel", mode:"screen", result:"rg")
+                        fe-blend(in:"rg", in2:"blueChannel", mode:"screen", result: "abberated")
+                        
+                        fe-bevel-map(bevel-size:48px, bevel-curve: "quint", result:"disp-map")
+                        fe-displacement-map(in:"abberated",in2:"disp-map", scale:4, x-channel-selector:"R", y-channel-selector:"G")
+    }
+
+
+    </style>
+    <script>
+
+  class MovableElement extends Element {
+    tracking = false;
+    dx; dy;
+
+    ["on mousedown at :root"](evt) { 
+        this.tracking = true; 
+        this.dx = evt.x;
+        this.dy = evt.y;
+        this.state.capture("strict");
+    }
+    ["on mouseup"](evt) { 
+        this.tracking = false; 
+        this.state.capture();
+    }
+
+    ["on mousemove"](evt) {
+        if(this.tracking) {
+          let {x,y} = evt.windowPosition;
+          let [px, py] = this.parentElement.state.box("position","inner", "window", false);
+          let [borderx, bordery] = this.state.box("rect","border", "inner", false); // distance from 
+          this.style.set ({left: x - px - this.dx - borderx, top: y - py - this.dy - bordery});
+          Window.this.update();
+        }
+    }
+ }
+
+
+    </script>
+  </head>
+<body>
+
+<div.filtered>
+  Test of liquid glass effect
+</div>
+
+</body>
+</html>
