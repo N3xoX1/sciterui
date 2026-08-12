@@ -120,7 +120,7 @@ bool Sciter::SetElementHtmlFromResource(SCITER_ELEMENT elemHandle, const char * 
     {
         return false;
     }
-    std::unique_ptr<uint8_t> Data;
+    std::unique_ptr<uint8_t[]> Data;
     uint32_t Size = 0;
     if (!m_resourceManager.LoadResource(stdstr(uri).ToUTF16().c_str(), Data, Size))
     {
@@ -138,7 +138,7 @@ bool Sciter::LoadResource(const char * uri, std::vector<uint8_t> & out)
     {
         return false;
     }
-    std::unique_ptr<uint8_t> data;
+    std::unique_ptr<uint8_t[]> data;
     uint32_t size = 0;
     if (!m_resourceManager.LoadResource(stdstr(uri).ToUTF16().c_str(), data, size))
     {

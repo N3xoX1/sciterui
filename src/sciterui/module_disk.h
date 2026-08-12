@@ -15,7 +15,7 @@ public:
     bool LoadModule(const char * path);
 
     // IResourceModule
-    bool LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t> & data, uint32_t & size);
+    bool LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t[]> & data, uint32_t & size);
 
 private:
     ModuleDisk(const ModuleDisk &) = delete;

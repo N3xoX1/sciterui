@@ -1,10 +1,11 @@
-#include <widgets/page_nav.h>
-#include <sciter_element.h>
-#include <sciter_handler.h>
 #include "std_string.h"
 #include <map>
 #include <memory>
+#include <sciter_element.h>
+#include <sciter_handler.h>
 #include <set>
+#include <string.h>
+#include <widgets/page_nav.h>
 
 namespace SciterUI
 {

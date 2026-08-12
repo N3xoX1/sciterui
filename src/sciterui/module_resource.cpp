@@ -34,7 +34,7 @@ bool ModuleResource::LoadModule(const char * path)
     return true;
 }
 
-bool ModuleResource::LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t> & data, uint32_t & size)
+bool ModuleResource::LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t[]> & data, uint32_t & size)
 {
     if (m_module == nullptr)
     {

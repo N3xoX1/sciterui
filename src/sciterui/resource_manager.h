@@ -29,7 +29,7 @@ public:
     ResourceManager(const char * languageDir);
 
     bool Initialize(const char * baseLanguage, const char * currentLanguage);
-    bool LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_t> & data, uint32_t & size);
+    bool LoadResource(const sui_wchar * uri, std::unique_ptr<uint8_t[]> & data, uint32_t & size);
 
 private:
     ResourceManager(void) = delete;
