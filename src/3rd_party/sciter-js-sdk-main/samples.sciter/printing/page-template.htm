@@ -6,9 +6,15 @@
     <style>
       body { flow: vertical; }
       body > pageframe  { size:*; margin:0.5in; /* to account dead zones on the page */ }
+
+      footer { text-align:right; border-top: 1px solid;}  
+      html[page-parity="odd"] footer { text-align:left; }
+
     </style>
   </head>
 <body>
+  <header>Header</header>
   <pageframe />
+  <footer>Page <span id="page-no"/> of <span id="total-pages" /></footer>
 </body>
 </html>

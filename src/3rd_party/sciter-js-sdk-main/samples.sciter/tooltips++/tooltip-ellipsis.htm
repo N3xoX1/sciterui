@@ -20,6 +20,20 @@
           }
 
         </style>
+        <script>
+/*
+          // if you want to disable tooltip show on particular element : 
+          document.on("mouseidle", "label", e => { 
+            return true;
+          });
+*/          
+
+          document.on("dblclick", "label", e => { 
+            Window.this.modal(<alert>Clicked!</alert>);
+          });
+
+
+        </script>
     </head>
     <body>
      <p>Hover mouse to see automatic tooltip generation on text-overflow:ellipsis;</p> 

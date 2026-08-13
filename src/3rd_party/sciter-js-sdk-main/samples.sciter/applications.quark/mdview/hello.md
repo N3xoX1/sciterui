@@ -24,6 +24,6 @@ You can also view entire folder, this will list .md files.
 
 * Maintins view history. So you may have to start the viewer with the root/toc MD file - for example for viewing documentation pages.
 * Supports day/night themes.
-* It uses [Remarakable](https://github.com/jonschlinkert/remarkable) JS library for MD -> HTML conversion and so it is configurable - various [plugins are available](https://www.npmjs.com/search?q=keywords:remarkable).
+* It uses built-in @markdown module (native parser).
 * Supports printing but on Windows only so far.
 

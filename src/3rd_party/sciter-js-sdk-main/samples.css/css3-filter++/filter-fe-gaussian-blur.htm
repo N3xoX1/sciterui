@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+    div 
+    {
+      border:1px solid black;
+      width:max-content;
+    }
+    
+    div > text { color:red; margin-top:*; text-align:center; width:*; }
+    
+    .blur {
+      filter: fe-gaussian-blur(std-deviation:5);
+    }
+    .blur-alpha {
+      filter: fe-gaussian-blur(std-deviation:5, source: "alpha");
+    }
+
+    .drop-shadow {
+      filter: fe-gaussian-blur(std-deviation:5, source: "alpha")
+              fe-offset(dx:10px,dy:10px)
+              fe-merge(second:"source");
+    }
+
+
+    </style>
+  </head>
+<body>
+
+<div>
+  <picture src="images/diamond.png" />
+  <text>original</text>
+</div>  
+<div>
+  <picture src="images/diamond.png" .blur/>
+  <text>gaussian blur</text>
+</div>
+<div>
+  <picture src="images/diamond.png" .blur-alpha/>
+  <text>gaussian blur alpha</text>
+</div>
+<div>
+  <picture src="images/diamond.png" .drop-shadow/>
+  <text>drop shadow</text>
+</div>
+
+
+</body>
+</html>

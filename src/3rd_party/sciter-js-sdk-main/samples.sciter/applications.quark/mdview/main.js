@@ -1,8 +1,7 @@
 import * as sys from "@sys";
 import * as env from "@env";
 
-import {Remarkable} from "remarkable/index.js";
-import {HeaderIds} from "remarkable/plugins/header-ids.js";
+import * as MD from "@markdown";
 
 import * as Settings from "settings.js";
 
@@ -14,8 +13,8 @@ const overlay = document.$("frame#overlay"); // print frame
 const FolderE = document.$("#folder"); // folder element (files)
 const ResultE = document.$("#result"); // result element (search)
 
-const md = new Remarkable({html: true});
-md.use(HeaderIds({anchorText: " "}));
+//const md = new Remarkable({html: true});
+//md.use(HeaderIds({anchorText: " "}));
 
 export async function load(href = null) {
   try {
@@ -25,7 +24,8 @@ export async function load(href = null) {
 
     for (const f of Search.docs) {
       if (f.path == href) {
-        const body = md.render(f.data);
+        const body = //md.render(f.data);
+                     MD.toHTML(f.data, {URL:href});
         const html = `<html><body>${body}</body></html>`;
         content.frame.loadHtml(html, href);
         return;
@@ -36,7 +36,7 @@ export async function load(href = null) {
     //let body = sciter.decode(text,"utf-8");
     const r = await fetch(url.href);
     let body = r.text();
-    body = md.render(body);
+    body = MD.toHTML(body, {URL:url.href});
     const html = `<html><body>${body}</body></html>`;
     content.frame.loadHtml(html, href);
     if (url.hash)
@@ -49,6 +49,7 @@ export async function load(href = null) {
 }
 
 function loadFolder(path) {
+
   function File(props) {
     const {name, folder} = props;
     const atts = (name == "index.md" || name == "README.md") ? {"index": true} : {};
@@ -106,7 +107,7 @@ function loadFolder(path) {
     return content;
   };
 
-  FolderE.content(folderContent(path));
+  FolderE.content(<>{folderContent(path)}</>);
 
   FolderE.on("change", () => {
     load(FolderE.value);

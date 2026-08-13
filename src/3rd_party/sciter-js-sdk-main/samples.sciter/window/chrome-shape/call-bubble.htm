@@ -1,0 +1,49 @@
+<html 
+    
+    window-frame="solid-with-shadow"
+    window-width="max-content"
+    window-height="max-content"
+    window-resizable="false"
+    window-minimizable="false"
+    window-maximizable="false"
+    window-closable="false"
+    window-blurbehind="auto">
+    <head>
+        <title>Test</title>
+        <style>
+
+html {
+    background:transparent;
+}
+
+body {
+    margin:0; 
+    padding-top:32px;
+    //background:gold;
+}
+
+div {
+    margin-top:*;
+    margin-bottom:*;
+    text-align:center;
+}
+
+
+        </style>
+        <script|module>
+
+import {callBubblePath} from "./call-bubble-shape.js";
+
+const path = callBubblePath(document.body,"top");
+Window.this.shape(path);
+
+document.on("ready", function(){
+  Window.this.state = Window.WINDOW_SHOWN;
+  Window.this.activate(true);
+})        
+        </script>
+    </head>
+    <body>
+       <div>Test of shaped window</div>
+    </body>
+</html>

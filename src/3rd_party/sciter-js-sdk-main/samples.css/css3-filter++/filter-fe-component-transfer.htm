@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style>
+
+div.rainbow {
+    height:1em;
+    width:*;
+    background: linear-gradient(to right, red, yellow, lime, cyan, blue, purple);
+}
+
+section.identity > div.rainbow {
+    filter: fe-component-transfer(R:identity(),G:identity(),B:identity());
+}
+
+section.table-lookup > div.rainbow {
+    filter: fe-component-transfer(
+        R:table(0,0,1,1),
+        G:table(1,1,0,0),
+        B:table(0,1,1,0));
+}
+
+section.discrete-table-lookup > div.rainbow {
+    filter: fe-component-transfer(
+        R:discrete(0,0,1,1),
+        G:discrete(1,1,0,0),
+        B:discrete(0,1,1,0));
+}
+
+section.linear > div.rainbow {
+    filter: fe-component-transfer(
+        R:linear(slope:0.5, intercept:0.0),
+        G:linear(slope:0.5, intercept:0.25),
+        B:linear(slope:0.5, intercept:0.5));
+}
+
+section.gamma > div.rainbow {
+    filter: fe-component-transfer(
+        R:gamma(amplitude:4, exponent:7),
+        G:gamma(amplitude:4, exponent:4),
+        B:gamma(amplitude:4, exponent:1));
+}
+
+        </style>
+        <script></script>
+    </head>
+    <body>
+
+    <section>
+      <h2>default</h2>
+      <div.rainbow />
+    </section>
+
+    <section.identity>
+      <h2>identity</h2>
+      <div.rainbow />
+    </section>
+
+    <section.table-lookup>
+      <h2>table lookup</h2>
+      <div.rainbow />
+    </section>
+
+    <section.discrete-table-lookup>
+      <h2>discrete table lookup</h2>
+      <div.rainbow />
+    </section>
+
+    <section.linear>
+      <h2>linear function</h2>
+      <div.rainbow />
+    </section>
+
+    <section.gamma>
+      <h2>gamma function</h2>
+      <div.rainbow />
+    </section>
+
+
+    </body>
+</html>

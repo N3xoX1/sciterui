@@ -58,21 +58,18 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <WindowsSDKDesktopARM64Support>true</WindowsSDKDesktopARM64Support>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -99,43 +96,43 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\bin\windows\x32\</OutDir>
-    <IntDir>obj\x32\Debug\lite-bitmap\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows\x86\</OutDir>
+    <IntDir>$(ProjectDir)obj\x86\Debug\lite-bitmap\</IntDir>
     <TargetName>lite-bitmap</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\bin\windows\x64\</OutDir>
-    <IntDir>obj\x64\Debug\lite-bitmap\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows\x64\</OutDir>
+    <IntDir>$(ProjectDir)obj\x64\Debug\lite-bitmap\</IntDir>
     <TargetName>lite-bitmap</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\bin\windows\arm64\</OutDir>
-    <IntDir>obj\arm64\Debug\lite-bitmap\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows\arm64\</OutDir>
+    <IntDir>$(ProjectDir)obj\arm64\Debug\lite-bitmap\</IntDir>
     <TargetName>lite-bitmap</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\bin\windows\x32\</OutDir>
-    <IntDir>obj\x32\Release\lite-bitmap\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows\x86\</OutDir>
+    <IntDir>$(ProjectDir)obj\x86\Release\lite-bitmap\</IntDir>
     <TargetName>lite-bitmap</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\bin\windows\x64\</OutDir>
-    <IntDir>obj\x64\Release\lite-bitmap\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows\x64\</OutDir>
+    <IntDir>$(ProjectDir)obj\x64\Release\lite-bitmap\</IntDir>
     <TargetName>lite-bitmap</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\bin\windows\arm64\</OutDir>
-    <IntDir>obj\arm64\Release\lite-bitmap\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows\arm64\</OutDir>
+    <IntDir>$(ProjectDir)obj\arm64\Release\lite-bitmap\</IntDir>
     <TargetName>lite-bitmap</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
@@ -143,13 +140,11 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WIN32;DEBUG;_DEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WINDOWS;WIN32;DEBUG;_DEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include;..\..\demos.lite\lite-bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -160,6 +155,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -168,13 +165,11 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WIN32;WIN64;DEBUG;_DEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WINDOWS;WIN32;WIN64;DEBUG;_DEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include;..\..\demos.lite\lite-bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -185,6 +180,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -193,13 +190,11 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WIN32;WIN64;ARM64;DEBUG;_DEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WINDOWS;WIN32;WIN64;ARM64;DEBUG;_DEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include;..\..\demos.lite\lite-bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -210,6 +205,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -218,7 +215,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WINDOWS;WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include;..\..\demos.lite\lite-bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MinSpace</Optimization>
@@ -227,7 +224,6 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -240,6 +236,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -248,7 +246,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WIN32;WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WINDOWS;WIN32;WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include;..\..\demos.lite\lite-bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MinSpace</Optimization>
@@ -257,7 +255,6 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -270,6 +267,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -278,7 +277,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WIN32;WIN64;ARM64;NDEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEVICE=DESKTOP;DEVICE_DESKTOP;WINDOWS;WIN32;WIN64;ARM64;NDEBUG;_CRT_SECURE_NO_WARNINGS;WINDOWLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\include;..\..\demos.lite\lite-bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>MinSpace</Optimization>
@@ -287,7 +286,6 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
@@ -300,6 +298,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>

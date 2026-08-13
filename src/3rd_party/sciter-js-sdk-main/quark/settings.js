@@ -97,6 +97,12 @@ Window.this.on("move", saveState)
   .on("size", saveState);
 
 export async function init(APP_NAME) {
-  path = env.path("USER_APPDATA", APP_NAME + ".json");
+  for(let arg of env.arguments()) {
+    if(arg.endsWith(".json")) {
+      path = arg;
+      break;
+    }
+  }
+  if (!path) path = env.path("USER_APPDATA", APP_NAME + ".json");
   restore();
 }

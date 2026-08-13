@@ -59,9 +59,6 @@
   #ifndef ANDROID
     #define ANDROID
   #endif
-  #ifndef WINDOWLESS
-   #define WINDOWLESS
-  #endif
 #elif defined(__linux__)
   #ifndef LINUX
     #define LINUX
@@ -215,8 +212,6 @@
   #endif
 
 #elif defined(ANDROID)
-
-  #define WINDOWLESS
 
   //#include <uchar.h>
   #include <string.h>

@@ -1,0 +1,105 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style>
+
+.circle {
+    size:40px;
+    border-radius:20px;
+    position:parent;
+}
+
+.circle.red { background: rgba(255,0,0,0.5); left:20px; top:10px; }
+.circle.green { background: rgba(0,255,0,0.5); left:10px; top:30px; }
+.circle.blue { background: rgba(0,0,255,0.5); left:30px; top:30px; }
+
+section {
+    size:80px;
+    border:1px solid;
+}
+
+section.identity {
+    filter: fe-color-matrix( type:matrix, values: 
+                      1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 1 0 );
+}
+
+section.togreen {
+    filter: fe-color-matrix( type:matrix, values: 
+                      0 0 0 0 0
+                      1 1 1 1 0
+                      0 0 0 0 0
+                      0 0 0 1 0 );
+}
+
+section.saturate {
+    filter: fe-color-matrix( type:saturate, values: 0.2);
+}
+
+section.hue-rotate {
+    filter: fe-color-matrix( type:hue-rotate, values:100deg);
+}
+
+section.luminance-to-alpha {
+    filter: fe-color-matrix( type:luminance-to-alpha);
+}
+
+
+        </style>
+        <script></script>
+    </head>
+    <body>
+
+<h2>Original</h2>
+
+<section>
+    <div.circle.red />
+    <div.circle.green />
+    <div.circle.blue />
+</section>
+
+<h2>Identity</h2>
+
+<section.identity>
+    <div.circle.red />
+    <div.circle.green />
+    <div.circle.blue />
+</section>
+
+<h2>To green</h2>
+
+<section.togreen>
+    <div.circle.red />
+    <div.circle.green />
+    <div.circle.blue />
+</section>
+
+<h2>Saturate</h2>
+
+<section.saturate>
+    <div.circle.red />
+    <div.circle.green />
+    <div.circle.blue />
+</section>
+
+<h2>Hue rotate</h2>
+
+<section.hue-rotate>
+    <div.circle.red />
+    <div.circle.green />
+    <div.circle.blue />
+</section>
+
+<h2>Luminance to alpha</h2>
+
+<section.luminance-to-alpha>
+    <div.circle.red />
+    <div.circle.green />
+    <div.circle.blue />
+</section>
+
+
+    </body>
+</html>

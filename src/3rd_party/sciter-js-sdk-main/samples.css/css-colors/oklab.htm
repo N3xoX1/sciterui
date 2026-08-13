@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <title>Test OKLAB</title>
+        <style>
+
+    [data-color="red-dark"] {
+      background-color: oklab(0.05 0.4 0.4);
+    }
+    [data-color="red"] {
+      background-color: oklab(0.5 0.4 0.4);
+    }
+    [data-color="red-light"] {
+      background-color: oklab(0.95 0.4 0.4);
+    }
+
+    [data-color="green-dark"] {
+      background-color: oklab(5% -100% 0.4);
+    }
+    [data-color="green"] {
+      background-color: oklab(50% -100% 0.4);
+    }
+    [data-color="green-light"] {
+      background-color: oklab(95% -100% 0.4);
+    }
+
+    [data-color="blue-dark"] {
+      background-color: oklab(0.05 -0.3 -0.4);
+    }
+    [data-color="blue"] {
+      background-color: oklab(0.5 -0.3 -0.4);
+    }
+    [data-color="blue-light"] {
+      background-color: oklab(0.95 -0.3 -0.4);
+    }
+
+    section {
+        display:grid;
+        grid-template-columns: repeat(3, 200px);
+        grid-template-rows: repeat(3, 100px);
+        gap:3px;
+    }
+
+        </style>
+        <script></script>
+    </head>
+    <body>
+       <section>
+        <div data-color="blue-dark"></div>
+        <div data-color="blue"></div>
+        <div data-color="blue-light"></div>
+
+        <div data-color="red-dark"></div>
+        <div data-color="red"></div>
+        <div data-color="red-light"></div>
+
+        <div data-color="green-dark"></div>
+        <div data-color="green"></div>
+        <div data-color="green-light"></div>
+      </section>
+    </body>
+</html>

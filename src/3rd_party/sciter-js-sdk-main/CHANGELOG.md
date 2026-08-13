@@ -1,3 +1,385 @@
+## 6.0.4.9-bis
+
+### Fixes:
+
+* `<img src="...">` handling fix.
+
+## 6.0.4.9
+
+* Some SVG filters implemented as CSS filters, see sdk/samples.css/css3-filter++/
+
+  In particular see sdk/samples.css/css3-filter++/filter-fe-liquid-glass-effect.htm and filter-fe-liquid-glass-effect-chromatic-abberation.htm for an implementation of Apple's Liquid Glass Effect by just CSS means. 
+
+### New:
+
+### Fixes:
+
+* [dom] fix of AV in `<input|color>` selector;
+* [css] fix of images order drawing in background lists;
+* [Windows] fix of "crash when Explorer restarts while a popup window exists";
+* [Windows] better tooltips handling in presence of modals.
+* [internal, configuration] @markdown and @yaml modules are made optional - engine can be compiled without them;
+* [DOM] regression fix in `element.on("event", "selector", func)` handlers;
+
+## 6.0.4.8
+
+### New:
+
+* native YAML support - builtin module _yaml_;
+* [css] `:has(...)`` pseudo-class selector, see [:has @ MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:has);
+* [css] new `position:parent` positioning schema:  
+  similar to 
+    ```css
+    parent {position: relative;}
+    parent > child { position: absolute; left:x; top:y; }
+    ```
+  but with just one rule and without `position:relative` side effects on parent;
+
+* [css] `sys-red` ... `sys-violet` colors (a.k.a. GitHub colors), see: sdk/samples.css/css++/system-colors.htm
+* New samples:
+  * [sample] sdk/samples.sciter/input-elements/badges.htm
+  * [sample] sdk/samples.sciter/input-elements/buttons.htm
+
+### Fixes:
+
+* [pager/pdf] fix of AV while converting to PDF;
+* attempt to fix: "Sciter heap corruption" (c) Achim Kaiser;
+* [WIndows] fix of exStyle overwriting for external windows (SciterProcND);
+* [JS, DOM] forcing cancellation of running async functions before closing document or window;
+* `<select|dropdown>` - setting proper dimensions when value changes when its dimensions depend on content (like `width:max-content`);
+
+### Refactoring:
+
+* sdk/samples.sciter/applications.quark/mdview/ sample was updated to use native `@markdown` module.
+
+## 6.0.4.7
+
+### New:
+
+* [markdown] support of defintion lists generation (dl/dt/dd).
+
+### Fixes:
+
+* Fix of compilation on ARM64.
+* [css] fix of `flow: row(dt,dd)` of dom like `<dt/><dd/><dd/>` - second `<dd/>` goes to second column as it should.
+* [Windows] attempt to fix heap corruption after notebook lid closure / wakeup. 
+* [printing] fix of text rendering on page-template page.
+
+## 6.0.4.6
+
+### New:
+
+#### Native Markdown support
+
+Builtin module _markdown_ - native markdown parser.
+
+```js
+  import * as MD from "@markdown";
+```
+
+Allows to: 
+
+* `MD.toHTML(md)` - parse markdown to a string contain HTML. 
+* `MD.toElement(element,md)` - parse and inject markdown to DOM element directly bypassing HTML parsing.
+* `MD.toFragment(md)` - parse markdown to VDOM's fragment (`<> ... content </>`) that can be used in Reactor components directly.
+
+* [Reactor] ["on click of selector"](evt,selected) - handles elements that are coming from exactly element that matches the selector ( evt.target === that-selected-element ).
+
+#### Reactor: `on ... at ...` handlers
+
+```js
+class Component {
+  ["on event of selector"](evt, element) {}
+}
+```
+handle _event_ coming **only** from elements satisfying the _selector_. Note "on event at selector" handler fires up on events coming from the elements satisfying the _selector_ **and any its child**.
+
+### Fixes:
+
+* patch by AdGuard: `webview.allowContextMenu` flag and attribute to en/disable context menu in webview;
+* fix of possible AV in `<htmlarea/>`;
+* [windows,macos] fix of `Windows.this.on("system-XXX")` events generation;
+* [windows] fix of getting image from clipboard;
+* [css] fix of outlines rendering inside scrollables;
+* [rendering] performance optimization of pages containing significant amount of scrollable content;
+* [dom] fix of click handling in `<button|menu><icon/></button>`;
+* [xdom] debug-peer.js, fix of JS exception on window closure;
+* [JS runtime] `fetch()` uploading, fix of "name" and "type"fields generation;
+* [JS runtime] `event.button` fix for mouse events;
+
+## 6.0.4.5
+
+### Fixes:
+
+* [plaintext-editor] fix of "CTRL+X is operational in readonly mode".
+* [clipboard] fix of HTML format handling;
+* [fetch] fix of AV while closing window with not finished `fetch()`'es;
+* [DOM] Fix of possible AV when multiple popups are present;
+* Fix of restoring focus after `Window.this.modal()` call;
+* Fix window creation when system is not able to provide monitor info (e.g. RDP).
+* [JS,RegExp] fix of false error generation in `re = /[\-]/u;`
+
+## 6.0.4.4
+
+### Fixes:
+
+* [api] suppressing SN_LOAD_DATA request on erroneous gradient declarations;
+* posted events, immediate execution on window closing;
+* [osx] modal window rendering fix;
+* [css] regression fix in multiple background images implementation;
+* [css] `flow:grid`, exception suppression in degenerative cases;
+* [css] `<input|vslider/hslider>` rendering fixes;
+* [css] sdk/samples.sciter/themes/ adjustments;
+* [reactor, css] fix of CSS.set`...` handling so it can use `@const` and `@mixin` declarations at host document styles;
+* fix of AV in Sciter under RDP;
+
+## 6.0.4.3
+
+### Fixes:
+
+* [css] support of outline in `display:inline` elements.
+* `<select>`, option:checked regression fixes.
+* [reactor] `componentDidUnmount` method call generation.
+* [reactor] fix of `patch()` when component-function produces empty list (e.g. return []);
+* [htmlarea] fix of initial caret position;
+
+## 6.0.4.2
+
+### Fixes:
+
+* [css] Fix of possible AV in `::before`/`::after` handling.
+* Fix of possible AV at app shutdown when there are external references to JS objects in VALUEs;
+* fix of `keyEvent.ctrlKey` & co. flags.
+* fix of `CTRL+SHIFT+I` -> start inspector, `CTRL+SHIFT + MouseClick` - inspect element.
+* [css] `:mixed` state flag, accompanies `:checked` so `<button|checkbox mixed>` can be styled appropriately;
+* behavior: switch fixes;
+* fix `elementCheckbox.click()`, it will a) switch check on/off state and b) generate "change" and "click" events.
+* [Sciter/D] demos folder reorganization;
+
+## 6.0.4.1
+
+### New:
+
+* [a11y] new `behavior:select-switch` , applied on <select|switch>, see: sdk/samples.sciter/input-elements/switch.htm . Selection is made by arrow keys with SPACE key to commit the selection.
+* sciter+/D :
+  + sciter.om.Promise - implementation of async functions in D;
+  + demo of async function in D;
+  + demo of calling JS function from D side; 
+  + Fix of copy constructor in sciter.om.VALUE;
+
+### Fixes:
+
+* fix TAB/SHIFT-TAB handling;
+* [virtual-list] fix of AV when the list contains no items;
+* [a11y] fix of details/summary handling;
+* [a11y] attempt to fix `<button|checkbox mixed/>` handling.
+* [windows, mixin mode] `Window.this.on("activate")` event generation.
+
+## 6.0.4.0
+
+### New:
+
+* D language integration as part of the SDK. See sdk/sciter+/D folder and [this post at D forum](https://forum.dlang.org/thread/usudgwesabmbbotmatiq@forum.dlang.org) 
+* Sciter API is alternatively exposed from sciter.dll as plain C export functions. For example to get reference to SciterExec API function you can use dlsym("SciterExecImp"). Note "Imp" suffix. 
+  
+  This is made for more convenient and stable integration with other-than-C languages.
+
+* `@import url(sciter:extended-chrome.css)` - this CSS will cause creation of default window chrome (caption/min/max/close) when `window-frame="extended"` is used for the window. 
+
+### Fixes:
+
+* [osx] `packfolder`, fix of args handling;
+* [css] Support of `auto` in `<html theme="auto">`, this will cause `:theme(dark)` or `theme(light)` to be applied automatically according to user preferences;
+* [css] Support of `auto` in `<html window-blurbehind="auto">`, this will set blurbehind background on window according to its type and system settings;
+* [a11y] new `behavior:switch` that is mostly `behavior:check` but pronounces "on"/"off" instead of "checked"/"not checked".
+* [a11y] behavior:switch recognises `aria-value="false;true"` attribute to pronounce "false" and "true" instead of default "off;on";
+* [a11y] AV fix in element::first/last_element();
+* [JS] `Image.load()` throws "load rejected" error if the app returns `LOAD_DISCARD` from `SN_LOAD_DATA` handler.
+* fix of event.reason in "click" event.
+* [scroll animation] rollback fix;
+* [Windows] keys handling fix;
+* [virtual-list] `vlist.navigateTo()` fixes;
+* fix of cursor flickering : https://sciter.com/forums/topic/cursor-pointer-flicker-on-click/ 
+* [popups] tweak of popup positioning on multi-monitor systems.
+* [API] `SciterWindowExec`  `SCITER_WINDOW_GET/SET_PLACEMENT` fix.
+
+## 6.0.3.18
+
+### Fixes:
+
+* [Windows XP] support is back.
+* [windows XP/7] compatibility: rounded corners and box-shadows that are set on windows and popups are ignored as Sciter does not support transparent windows on these OSes.
+* [osx] attempt to fix AV in popup windows on MacOS v.12.
+
+## 6.0.3.17
+
+### New:
+
+* `Graphics.fontFamilies()` static method, reports name list of installed font families.
+
+### Fixes:
+
+* [css] `<input|color>` style fixes;
+* [windows] fix of `window-min`/`max` DPI handling;
+* `doubleclick`/`tripleclick` event generation fix;
+* [windows] popup closing on child window click;
+* [css] fix `outline:xxx` rendering;
+* [dom] modal window, setting initial focus, `autofocus` attribute support;
+* [windows,accessibility] various fixes;
+
+## 6.0.3.16
+
+### Fixes:
+
+* `tcpSocket.bind({})` fix of optional flags parameter handling;
+* [Graphics] fix of borders around `gfx.fillText`;
+* `graphics.fill/strokeStyle` getters;
+* [windows] fix of monitor detection issue under VPS;
+* [behavior:history] `frame.history.go(int)` and `frame.history.go(string)`;
+
+## 6.0.3.15
+
+### Fixes:
+
+* [win] fix of 1px border in maximized/fullscreen;
+* [osx] set window region - better shape generation;
+* more robust window lifecycle handling;
+* fix of possible AW after window destruction;
+* `const font = graphics.font;` - implementation of font property getter;
+
+## 6.0.3.14
+
+### New:
+
+* New `event single-click`. Either one of `single-click`, `double-click` or `triple-click` is generated.
+
+### Fixes:
+
+* [API] element.start_timer() on root of the window, can be handled by a behavior attached to the window.
+* [canvas] fix of `gfx.font = "...";`
+* [css] fix of cursor handling on popup;
+* Fix of potential AV while closing window of `element.takeOff()` (out of canvas) element.
+* Fix of AV in `console.log()` when there are no windows left.
+* [osx] `element.requestPaint()` fix.
+* [windows 11] fix of full screen window shape (used to show round corners).
+* Fix of initial window size calculation in presence of `window-frame=…`
+* Fix of window size change while changing `window.isResizable` attribute. 
+
+## 6.0.3.13
+
+### New:
+
+* [DOM] `element.takeOff(...)` and `element.popup(what, ...)` methods return `PopupWindow` object that allows to subscribe to events and manage popup windows;
+* [css] better support of gradients in CSS:
+  * W3C compatible declarations (except of `in {color space definitions}` );
+  * Support of [conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/gradient/conic-gradient);
+* [css] support of multiple background images: `background: image-def-1 , image-def-2, ...`
+
+### Fixes:
+
+* [windows] fix of deadlock in FreeLibrary(sciter.dll);
+* [css] transitions, fix of rollback animations while canceling not finished transitions;
+* [css] sciter specific `background-gradient: ...` is gone. Use `background:...` or `background-image:...` instead;
+* [quark] updates, see [this](https://sciter.com/forums/topic/another-enhancement-to-quark/);
+
+## 6.0.3.12
+
+### New:
+
++ [DOM] `Window.this.isMousePassthrough = true | false` makes window completely transparent for mouse, for HUD panel cases;
++ [DOM, takeOff()] `takeOff({isResizable, isMousePassthrough})` and support of `role="window-caption"` elements on taken off elements, see: samples.sciter/desktop-dom-elements/basics.htm
++ [linux] Sciter produces portable binaries (no AVX instructions).
+
+### Fixes:
+
+* [osx] fix of AV in Drag'n'Drop handling when Sciter is drag source;
+* [DOM] fix of event `mouseidle` generation on popups, also fixes tooltips on popups;
+* [virtual list] fix of the case when `totalItems * itemHeight > MAX_INT`. But `totalItems` still shall not exceed MAX_INT (0x7fffffff or 2,147,483,647 ), otherwise UB.
+
+## 6.0.3.11
+
+### New:
+
+* `Window.this.shape(Path | Element)` method to define non-trivial shapes of windows, see [this discussion](https://sciter.com/forums/topic/acrylic-mica-theme-for-call-bubble-window/#post-89941); 
+  Caveats: works on Windows and MacOS so far. 
+  * On MacOS click-through is not working reliably yet;
+  * On Windows shadows on shaped windows are not yet implemented. 
+  * Blur-behind is not working on Windows due to DWM limitations;
+
+* [i18n-reactor] demo-static.htm - alternative way of loading translation tables;
+* [DOM, terminal] `<terminal selectable>` - selection support (clipboard copyable) in terminal;
+
+### Fixes:
+
+* [DOM] `element.requestPaint()` fix;
+* [DOM] fix of tooltip appearance on popups;
+* [DOM, terminal] fix of auto dimensions;
+* [DOM, terminal] fix of terminal.clear();
+
+## 6.0.3.10-bis
+
+### Fixes:
+
+* [DOM] fix of potential AV on document reload in usciter.
+* [rendering] fix of table rendering on popup.
+
+## 6.0.3.10
+
+### Fixes:
+
+* [winxp] AV fix in attempt to create OpenGL backend. On WinXP Sciter uses strictly raster backend;
+* [windows] fix of fullscreen window;
+* Fix of windows positioning. ppx units are now px units used by the OS. This may affect saved window positions on MacOS, GTK4 and Wayland that do not use screen pixels for window coordinates.
+* More reliable Window.this.state handling;
+* [gtk4] fix in setting window size.
+
+## 6.0.3.9
+
+### Fixes:
+
+* [windows] fix of "tooltip brings parent window to front";
+* [dom] fix of stack overflow while setting focus on element;
+* [osx] fix of dialog window positioning;
+* [linux/gtk4] fix of high CPU consumption;
+
+## 6.0.3.8
+
+### New:
+
+* Sciter.Lite: OpenGL backend added. See demos.lite/lite-sciter/
+
+### Fixes:
+
+* [gtk4] Fix of transparent windows and popups;
+* [osx] Proper window closing handling;
+* [windows] better handling of Sciter-as-a-child-window;
+
+## 6.0.3.7
+
+### Fixes:
+
+* Fix of *mouseidle* event and tooltips generation;
+* Fix of mouse handling over inline elements;
+* [gtk4] transparent popups fix;
+* [windows] `Window.this.blubehind = ...` switch artifacts;
+
+## 6.0.3.6
+
+### New:
+
+* [linux] Sciter uses GTK4 as windowing backend if target machine runs window manager based on GTK4, otherwise it uses WAYLAND or X11 directly.
+  Main purpose of GTK4 backend intrduction - better integration with the desktop : drag-n-drop, clipboard, file dialogs, window styling, etc.
+
+### Fixes:
+
+* [osx] fix of CPU consumption;
+* [osx] fix of keyboard handling;
+* fix of blur-behind on Windows and MacOS;
+* [windows] fix in monitors list detection logic;
+* [dom] fix of setting focus on mouse down in case of child windows;
+* [dom] window "activate" event fix;
+* [dom,popups] fix of mouseenter/leave handling;
+
 ## 6.0.3.5
 
 ### Fixes:

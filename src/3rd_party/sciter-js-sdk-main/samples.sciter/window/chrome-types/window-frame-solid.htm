@@ -1,11 +1,10 @@
 <html window-frame="solid"
-    window-width="40%"
-    window-height="40%" >
+   >
     <head>
         <title>Test</title>
         <style>
 
-html { border:3px solid #000; }
+html { background: gold; }
 
         </style>
         <script>
@@ -13,6 +12,12 @@ html { border:3px solid #000; }
 document.on("click", "button#close", function() {
   Window.this.close();
 });
+
+document.on("ready", function() {
+  let [x,y,w,h] = Window.this.box("xywh", "border", "monitor", false);
+  document.body.append(<p>box: {x},{y},{w},{h}</p>);
+});
+
 
         </script>
     </head>

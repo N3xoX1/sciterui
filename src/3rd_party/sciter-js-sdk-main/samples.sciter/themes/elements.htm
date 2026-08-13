@@ -28,7 +28,7 @@
 
     <form .toggles>
       <label>With options:</label>
-      <toggle (foo) checked>
+      <toggle(foo) checked>
         <option>No</option>
         <option>Yes</option>
       </toggle>
@@ -85,16 +85,15 @@
 
     <h2>&lt;input|number> element</h2>
     <div .hbox>
-      <input
-        |number
+      <input|number
         value="42"
         step="1"
         min="0"
         max="999"
         placeholder="number1"
       />
-      <input |number placeholder="number2" step="1" min="0" max="999" />
-      <input |number disabled step="1" min="0" max="999" />
+      <input|number placeholder="number2" step="1" min="0" max="999" />
+      <input|number disabled step="1" min="0" max="999" />
     </div>
 
     <h2>&lt;select|dropdown> element</h2>

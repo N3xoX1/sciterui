@@ -15,6 +15,10 @@
             }
           });
 
+          Window.this.on("statechange", function() {
+            console.log(document.attributes["window-state"]);
+          });
+
         </script>
     </head>
     

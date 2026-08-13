@@ -8,40 +8,15 @@ menu.context li label { aspect: MenuItemLabel; }
         </style>
         <script|module>
 
+import {App} from "./app.js";
+
 // built-in context menu translator
 globalThis.MenuItemLabel = function() {
   const label = JSX_translateText(this.innerText);
   if(label) this.innerText = label;
 }
 
-class App extends Element {
-
-    nmatches = 0;
-
-    render() {
-
-        /*@Literal string to translate*/
-        let littext = @"String to translate";
-
-        /*@Form content*/
-        return <body>
-            <p @title="Title test" @>UI language</p>
-            <hr/>
-            {littext}
-            <hr/>
-            <p @>Tests: <span @>first test</span>,<span @>second test</span></p>
-            <hr/>
-            <label>Matches</label> : <input|integer(nmatches) min=0 max=100 step=1 value={this.nmatches} />
-            <p @>{this.nmatches} matches</p>
-        </body>;
-    }
-
-    ["on change at input(nmatches)"](evt,input) {
-        this.componentUpdate { nmatches:input.value };
-    }
-}
-
-document.body.patch(<App />);
+document.body.append(<App />);
 
         </script>
     </head>

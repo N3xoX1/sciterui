@@ -99,6 +99,9 @@ namespace sciter
 			else if (0 == strcmp(name, "allowWindowOpen")) {
 				on_allowWindowOpen_changed();
 			}
+			else if (0 == strcmp(name, "allowContextMenu")) {
+				on_allowContextMenu_changed();
+			}
 		}
 
 		void init_webview() {
@@ -137,6 +140,7 @@ namespace sciter
 				if (succeed) {
 					bindSciterJSCall();
 					on_allowWindowOpen_changed();
+					on_allowContextMenu_changed();
 					on_src_changed();
 					self.send_event(WSTR("webview-ready"));
 				} else
@@ -164,6 +168,18 @@ namespace sciter
 			else {
 				aux::w2utf strVal(val.c_str());
 				this_webview->set_allowWindowOpen(strVal.c_str());
+			}
+		}
+
+		void on_allowContextMenu_changed() {
+			dom::element self = dom::element(this_element);
+			sciter::string val = self.get_attribute("allowContextMenu", WSTR("true"));
+			if (0 == val.length()) {
+				this_webview->set_allowContextMenu("false");
+			}
+			else {
+				aux::w2utf strVal(val.c_str());
+				this_webview->set_allowContextMenu(strVal.c_str());
 			}
 		}
 
@@ -306,6 +322,22 @@ namespace sciter
 			return true;
 		}
 
+		sciter::string getAllowContextMenu() {
+			dom::element self = dom::element(this_element);
+			return self.get_attribute("allowContextMenu", WSTR("true"));
+		}
+
+		bool setAllowContextMenu(const sciter::value& val) {
+			if (val == getAllowContextMenu()) {
+				return false;
+			}
+            sciter::string strVal = val.to_string();
+			dom::element self = dom::element(this_element);
+			self.set_attribute("allowContextMenu", strVal.c_str());
+			on_allowContextMenu_changed();
+			return true;
+		}
+
 		SOM_PASSPORT_BEGIN_EX(webview, sciter_webview)
 			SOM_FUNCS(
 				SOM_FUNC(loadUrl),
@@ -319,6 +351,7 @@ namespace sciter
 			SOM_PROPS(
 				SOM_VIRTUAL_PROP(src, getSrc, setSrc),
 				SOM_VIRTUAL_PROP(allowWindowOpen, getAllowWindowOpen, setAllowWindowOpen),
+				SOM_VIRTUAL_PROP(allowContextMenu, getAllowContextMenu, setAllowContextMenu),
 				SOM_RO_VIRTUAL_PROP(currentSrc, getCurrentSrc)
 			)
 		SOM_PASSPORT_END

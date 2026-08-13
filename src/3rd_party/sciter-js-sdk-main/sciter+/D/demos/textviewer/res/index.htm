@@ -1,0 +1,72 @@
+<html>
+    <head>
+        <title>Text Viewer 0.1</title>
+        <style>
+
+body {
+  margin:0; 
+}
+
+table {
+  size:*;
+  border:none;
+  border-spacing:0;
+  //font-family: ... ;
+  //font-size:16pt;
+}
+
+tbody 
+{
+  behavior: virtual-list;
+  overflow-y:auto;
+  size:*;
+}
+
+// line numbers
+table > tbody > tr > td:nth-child(1) { 
+  width: 4em;
+  text-align:right; 
+  border-right:1px solid #ccc;
+  color: #755; 
+  padding:0 0.5em;
+} 
+// line text
+table > tbody > tr > td:nth-child(2) { 
+  white-space: pre-wrap;
+  padding:0 0.5em;
+  width: *; 
+} 
+
+//table > tbody > tr:hover { outline:2px solid gold -2px; }
+
+div.error {
+  color:red;
+  size:*;
+  text-align:center; 
+  content-vertical-align:middle;
+} 
+
+        </style>
+        <script|module>
+
+import {TextTape} from "./TextTape.js";
+
+function showFile(mmt) {
+  document.body.content(<TextTape mmt={mmt} />);
+}
+
+function reportFileError(errMsg) {
+  document.body.content(<div class="error">{errMsg}</div>);  
+}
+
+// make these functions members of global doc namespace,
+// so D can access them
+globalThis.showFile = showFile;
+globalThis.reportFileError = reportFileError;
+
+        </script>
+    </head>
+    <body>
+will be replaced by JS 
+    </body>
+</html>
