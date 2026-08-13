@@ -61,7 +61,7 @@ inline  VOID    SCAPI SciterSetupDebugOutput ( HWINDOW hwndOrNull, LPVOID param,
            case OT_DOM: print("DOM: "); break;
            case OT_CSSS: print("csss!: "); break;
            case OT_CSS:  print("css: "); break;
-           case OT_TIS:  print("script: "); break;
+           case OT_SCRIPT:  print("script: "); break;
         }
         if(text[text_length])
         {

@@ -63,6 +63,12 @@ namespace webview
             webview->add_NavigationCompleted(this, nullptr);
             webview->add_NewWindowRequested(this, nullptr);
 
+            CComPtr<ICoreWebView2_11> webview11;
+            if (SUCCEEDED(webview->QueryInterface(IID_PPV_ARGS(&webview11))) && webview11)
+            {
+                webview11->add_ContextMenuRequested(this, nullptr);
+            }
+
             m_titleHandler = new webview2_com_handler(m_webview, m_cb);
             m_titleHandler->setHandlerIID(IID_ICoreWebView2DocumentTitleChangedEventHandler);
             webview->add_DocumentTitleChanged(m_titleHandler, nullptr);
@@ -128,6 +134,15 @@ namespace webview
         return S_OK;
     }
 
+    STDMETHODIMP webview2_com_handler::Invoke(ICoreWebView2 *sender, ICoreWebView2ContextMenuRequestedEventArgs *args)
+    {
+        const char* allow = m_webview->m_allowContextMenu.c_str();
+        if (0 != stricmp("true", allow)) {
+            args->put_Handled(TRUE);
+        }
+        return S_OK;
+    }
+
     STDMETHODIMP webview2_com_handler::Invoke(ICoreWebView2 *sender, ICoreWebView2NewWindowRequestedEventArgs *args)
     {
         const char* allow = m_webview->m_allowWindowOpen.c_str();
@@ -162,6 +177,7 @@ namespace webview
             webView->Create(NULL, &rect, 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
             webView->CenterWindow();
             webView->set_allowWindowOpen(m_webview->m_allowWindowOpen);
+            webView->set_allowContextMenu(m_webview->m_allowContextMenu);
             webView->load_engine([webView, args, deferral](bool succeed) -> void
                 {
                     args->put_NewWindow(webView->m_webview);
@@ -321,6 +337,11 @@ namespace webview
     void SciterEdgeWebView::set_allowWindowOpen(const std::string& val)
     {
         m_allowWindowOpen = val;
+    }
+
+    void SciterEdgeWebView::set_allowContextMenu(const std::string& val)
+    {
+        m_allowContextMenu = val;
     }
 
     std::string SciterEdgeWebView::currentSrc()

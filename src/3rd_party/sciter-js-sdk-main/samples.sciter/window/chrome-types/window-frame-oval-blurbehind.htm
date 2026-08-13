@@ -1,0 +1,48 @@
+<html 
+    window-frame="solid-with-shadow"
+    window-width="max-content"
+    window-height="max-content"
+    window-resizable="false"
+    window-minimizable="false"
+    window-maximizable="false"
+    window-closable="false"
+    window-blurbehind="auto">
+    <head>
+        <title>Test</title>
+        <style>
+
+html {
+    background:transparent;
+    overflow:hidden;
+}
+
+body {
+    margin:0; 
+    width:320px;
+    height: 110px;
+    border-radius:55px;
+    background: rgba(0,0,0,0.1);
+}
+
+div {
+    margin-top:*;
+    margin-bottom:*;
+    text-align:center;
+}
+
+
+        </style>
+        <script|module>
+
+Window.this.shape(document.body);
+
+document.on("ready", function(){
+  Window.this.state = Window.WINDOW_SHOWN;
+  Window.this.activate(true);
+})        
+        </script>
+    </head>
+    <body>
+       <div>Test of shaped window</div>
+    </body>
+</html>

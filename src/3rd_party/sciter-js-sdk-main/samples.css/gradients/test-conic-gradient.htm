@@ -1,0 +1,72 @@
+<html>
+  <head>
+  <title></title>
+<style>
+
+  body
+  {
+    flow:horizontal-flow;
+    background: url(back.png) repeat;
+    color:gray;
+    margin:0; padding:10px;
+    border-spacing:10px;
+  }
+
+  div {
+    width:*; height:200px; padding:6px; 
+    transition: background-image ease 0.5s;
+  }
+  div:nth-child(2n) { clear:right; }
+  
+
+  //white, orange, rgba(0,0,204,0.5)
+  div.rainbow
+  {
+    background: conic-gradient(red, orange, yellow, green, blue, magenta, red);
+  }
+  div.rainbow:hover
+  {
+    background: conic-gradient(red, orange, yellow, green, blue);
+  }
+
+  div.rainbow-2
+  {
+    background: conic-gradient(at 25% 25%, red, orange, yellow, green, blue, magenta, red);
+  }
+    div.rainbow-2:hover
+  {
+    background: conic-gradient(from 45deg at 25% 25%, red, orange, yellow, green, blue, magenta, red);
+  }
+
+  div.corner
+  {
+    background: conic-gradient(red, orange, yellow, green, blue, magenta 90deg);
+  }
+
+  div.corner:hover
+  {
+    background: conic-gradient(red, orange, yellow, green, blue, magenta 180deg);
+  }
+
+  div.corner-2
+  {
+    background: magenta conic-gradient(from 45deg, red, orange, yellow, green, blue, magenta 90deg);
+  }
+
+  div.corner-2:hover
+  {
+    background: magenta;
+  }
+
+  
+</style>
+  </head>
+<body>
+
+  <div .rainbow></div>
+  <div .corner></div>
+  <div .rainbow-2></div>
+  <div .corner-2></div>
+
+</body>
+</html>

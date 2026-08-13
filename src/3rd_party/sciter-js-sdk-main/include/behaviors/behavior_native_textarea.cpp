@@ -45,7 +45,7 @@ struct native_textarea: public event_handler
 
       RECT rc = self.get_location(VIEW_RELATIVE | CONTENT_BOX);
 
-      HWND parent = self.get_element_hwnd(false);
+      HWND parent = (HWND)self.get_element_hwnd(false);
 
       //SetWindowLong(parent, GWL_STYLE, WS_CLIPCHILDREN | GetWindowLong(parent,GWL_STYLE));
 

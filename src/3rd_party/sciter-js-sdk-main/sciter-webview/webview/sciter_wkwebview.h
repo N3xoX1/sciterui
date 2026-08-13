@@ -34,6 +34,7 @@ namespace webview
         void set_navigation_callback(const navigation_callback_t &cb);
         void set_msg_callback(const msg_callback_t& cb);
         void set_allowWindowOpen(const std::string& val);
+        void set_allowContextMenu(const std::string& val);
         std::string currentSrc();
         
         void* m_webview = nullptr;
@@ -42,6 +43,7 @@ namespace webview
         navigation_callback_t m_navigationCallback;
         msg_callback_t m_msgCallback;
         std::string m_allowWindowOpen = "nopopup";
+        std::string m_allowContextMenu = "nocontextmenu";
         
         void* m_containerView = nullptr;
         bool m_debugtools = false;

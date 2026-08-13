@@ -5,7 +5,9 @@
 
 Signature:
 
-`fetch(url:string | request:Request [, options:object]): Promise(Response)` 
+```
+fetch(url:string | request:Request [, options:object]): Promise(Response) 
+```
 
 Where _options_ is an object that may have following properties:
 

@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <title>Test OKLCH</title>
+        <style>
+
+    [data-color="blue-dark"] {
+      background-color: oklch(10% 0.4 240);
+    }
+    [data-color="blue"] {
+      background-color: oklch(50% 0.4 240);
+    }
+    [data-color="blue-light"] {
+      background-color: oklch(90% 0.4 240);
+    }
+
+    [data-color="red-dark"] {
+      background-color: oklch(10% 0.4 20);
+    }
+    [data-color="red"] {
+      background-color: oklch(50% 0.4 20);
+    }
+    [data-color="red-light"] {
+      background-color: oklch(90% 0.4 20);
+    }
+
+    [data-color="green-dark"] {
+      background-color: oklch(10% 0.4 130);
+    }
+    [data-color="green"] {
+      background-color: oklch(50% 0.4 130);
+    }
+    [data-color="green-light"] {
+      background-color: oklch(90% 0.4 130);
+    }
+
+    section {
+        display:grid;
+        grid-template-columns: repeat(3, 200px);
+        grid-template-rows: repeat(3, 100px);
+        gap:3px;
+    }
+
+        </style>
+        <script></script>
+    </head>
+    <body>
+       <section>
+        <div data-color="blue-dark"></div>
+        <div data-color="blue"></div>
+        <div data-color="blue-light"></div>
+
+        <div data-color="red-dark"></div>
+        <div data-color="red"></div>
+        <div data-color="red-light"></div>
+
+        <div data-color="green-dark"></div>
+        <div data-color="green"></div>
+        <div data-color="green-light"></div>
+      </section>
+    </body>
+</html>

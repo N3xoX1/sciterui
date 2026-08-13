@@ -6,7 +6,7 @@ This application is a viewer of Markdown files. It should be compiled with [Scit
 
 * Maintains view history. So you may have to start the viewer with the root/toc MD file - for example for viewing documentation pages.
 * Supports day/night themes.
-* It uses [Remarkable](https://github.com/jonschlinkert/remarkable) JS library for MD -> HTML conversion and so it is configurable - various [plugins are available](https://www.npmjs.com/search?q=keywords:remarkable).
+* It uses built-in @markdown module (native parser).
 * Supports printing but on Windows only so far.
 
 ## how to use

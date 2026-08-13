@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+
+    body {
+      background:gold;
+    }
+
+    div.circle
+    {
+      background:#0f0;
+      border-radius:100px;
+      size:200px;
+      margin:1em;
+    }
+  
+    .point-light
+    {
+      filter: fe-diffuse-lighting( lighting-color: #fff, 
+                                   lighting-source: point(x:50px,y:75px, z:20px),
+                                   result:"specout")
+              fe-composite(in2:"specout", operator: arithmetic(1, 0, 0, 0));
+    }
+
+    .distant-light
+    {
+      filter: fe-diffuse-lighting( lighting-color: #fff, 
+                                   lighting-source: distant(azimuth:240deg, elevation:20deg),
+                                   result:"specout")
+              fe-composite(in2:"specout", operator: arithmetic(1, 0, 0, 0));
+    }
+
+    .spot-light
+    {
+      filter: fe-diffuse-lighting( lighting-color: #fff, 
+                                   lighting-source: spot( x:15px, y:15px, z:30px,
+                                                          points-at-x:150px, points-at-y:150px, points-at-z:0px,
+                                                          limiting-cone-angle: 20deg ),
+                                   result:"specout")
+              fe-composite(in2:"specout", operator: arithmetic(1, 0, 0, 0));
+    }
+
+
+    </style>
+  </head>
+<body>
+
+<h1>Diffuse lighting</h1>
+
+<h2>Point light</h2>
+<div.circle.point-light />
+
+<h2>Distant light</h2>
+<div.circle.distant-light />
+
+<h2>Spot light</h2>
+<div.circle.spot-light />
+
+
+</body>
+</html>

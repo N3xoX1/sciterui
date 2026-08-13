@@ -371,3 +371,13 @@ If _useAlpha_ is _true_ then alpha value is used as a mask value. Otherwise non-
 ### popLayer()
 
 Pops layer created by most recent pushLayer().
+
+
+## Static properties and methods
+
+### fontFamilies()
+
+```js
+let listOfFontFamilies = Graphics.fontFamilies();
+```
+The method returns array of strings: names of font families that are installed on this machine.

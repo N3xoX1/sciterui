@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+    section 
+    {
+      border:1px solid black;
+      width:max-content;
+      margin:1em;
+    }
+
+    div.filter {
+      width:256px;
+      height:256px;
+    }
+    
+    section > text { color:red; margin-top:*; text-align:center; width:*; }
+
+    .arithmetic {
+      filter: fe-image(href: "images/diamond.png", result: "A")
+              fe-image(href: "images/spade.png", result: "B")
+              fe-composite(in:"A", in2:"B", operator: arithmetic(0, 1, 1, 0) );
+    }
+    .over {
+      filter: fe-image(href: "images/diamond.png", result: "A")
+              fe-image(href: "images/spade.png", result: "B")
+              fe-composite(in:"A", in2:"B", operator: over );
+    }
+    .in {
+      filter: fe-image(href: "images/diamond.png", result: "A")
+              fe-image(href: "images/spade.png", result: "B")
+              fe-composite(in:"A", in2:"B", operator: in );
+    }
+    .out {
+      filter: fe-image(href: "images/diamond.png", result: "A")
+              fe-image(href: "images/spade.png", result: "B")
+              fe-composite(in:"A", in2:"B", operator: out );
+    }
+    .atop {
+      filter: fe-image(href: "images/diamond.png", result: "A")
+              fe-image(href: "images/spade.png", result: "B")
+              fe-composite(in:"A", in2:"B", operator: atop );
+    }
+    .xor {
+      filter: fe-image(href: "images/diamond.png", result: "A")
+              fe-image(href: "images/spade.png", result: "B")
+              fe-composite(in:"A", in2:"B", operator: xor );
+    }
+
+
+    </style>
+  </head>
+<body>
+
+<section>
+  <div.filter.arithmetic/>
+  <text>arithmetic</text>
+</section>
+
+<section>
+  <div.filter.over/>
+  <text>over</text>
+</section>
+
+<section>
+  <div.filter.in/>
+  <text>in</text>
+</section>
+
+<section>
+  <div.filter.out/>
+  <text>out</text>
+</section>
+
+<section>
+  <div.filter.atop/>
+  <text>atop</text>
+</section>
+
+<section>
+  <div.filter.xor/>
+  <text>xor</text>
+</section>
+
+</body>
+</html>

@@ -32,19 +32,22 @@ workspace "sciter.sdk"
 
   -- -- location "build"
   filter "system:windows"
+    defines "WINDOWS"  
     location ("build/" .. osabbr())
     links { "shell32", "advapi32", "ole32", "oleaut32", "comdlg32" }
-    platforms { "x32", "x64", "arm64" }
+    platforms { "x86", "x64", "arm64" }
     systemversion "latest"
     buildoptions { "/experimental:c11atomics" }
-    
+
   filter "system:macosx"
+    defines "OSX"  
     location ("build/" .. osabbr())
     targetdir ("bin/" .. osabbr())
     links { "CoreFoundation.framework", "Cocoa.framework", "IOKit.framework" }
     platforms { "x64" }
       
   filter { "system:linux" }
+    defines "LINUX"  
     location("build/" .. osabbr())
     platforms { "x64", "arm64" }
     defines { "_GNU_SOURCE" }
@@ -65,9 +68,9 @@ workspace "sciter.sdk"
 
   includedirs { "include" }  
 
-  flags { "MultiProcessorCompile" }
+  --flags { "MultiProcessorCompile" }
 
-  filter "platforms:x32"
+  filter "platforms:x86"
     architecture "x86"
   filter "platforms:x64"
     architecture "x86_64"  
@@ -77,7 +80,7 @@ workspace "sciter.sdk"
     architecture "ARM"  
 
 
-  filter {"platforms:x32", "system:windows"}
+  filter {"platforms:x86", "system:windows"}
     defines { "WIN32" }
   filter {"platforms:x64", "system:windows"}
     defines { "WIN32","WIN64" }      
@@ -92,7 +95,7 @@ workspace "sciter.sdk"
     defines { "NDEBUG"}  
     optimize "Size"
     symbols "Off"
-    flags { "LinkTimeOptimization" }
+--    flags { "LinkTimeOptimization" }
 
   filter {"system:windows"}
     defines { "_CRT_SECURE_NO_WARNINGS" } 
@@ -485,13 +488,20 @@ project "lite-sciter"
     } 
     links { "CoreVideo.framework" }
     targetdir ("bin/" .. osabbr())   
+    
   filter "system:linux"  
     linkoptions { 
       "-Wall", 
       "-pthread", "-lm", 
       "-lX11","-lXrandr","-lXinerama", "-lXcursor",
-      "-lGL", "-lGLU", "-ldl" }
-    defines "_GLFW_X11" -- or "_GLFW_WAYLAND" or "_GLFW_MIR"
+      "-lGL", "-lGLU", 
+      "-lGLESv2","-lEGL",
+      "-ldl" }
+      
+    defines { "_GLFW_X11", "_GLFW_WAYLAND" } -- "_GLFW_MIR"
+    
+    includedirs { "demos.lite/lite-sciter/glfw/src/wayland" }  
+    
     files {
       "demos.lite/lite-sciter/glfw/src/xkb_unicode.c",
       "demos.lite/lite-sciter/glfw/src/glx_context.c",
@@ -501,7 +511,11 @@ project "lite-sciter"
       "demos.lite/lite-sciter/glfw/src/posix_time.*",
       "demos.lite/lite-sciter/glfw/src/linux_*.*",
       "demos.lite/lite-sciter/glfw/src/x11_*.*",
+      "demos.lite/lite-sciter/glfw/src/wayland/*.h",
+      "demos.lite/lite-sciter/glfw/src/wl_*.h*",
+      "demos.lite/lite-sciter/glfw/src/wl_*.cpp",
     }
+    
     
   filter {}
 

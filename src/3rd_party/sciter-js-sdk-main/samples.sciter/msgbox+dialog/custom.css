@@ -1,10 +1,12 @@
 
+@set alert {
 
-main#content {
-   background-color:gold; 
+   content {
+      background-color:gold; 
+   }
+
+   buttons {
+      background-color:red;    
+   } 
+
 }
-
-footer#button-bar {
-   background-color:red;    
-} 
-

@@ -8,10 +8,22 @@ import * as Data from "data.js";
 import {FileSelector, FolderSelector} from "utils.js";
 import * as Package from "package.js";
 import {LogRunner} from "logrunner.js";
+import * as env from "@env";
 
 // a.k.a. main()
-document.ready = function() {
+document.ready = async function () {
   Settings.init(APP_NAME);
+
+  // check for the assemble parameter
+  for (let arg of env.arguments()) {
+    let assembleIdx = scanf("assemble=%d", arg)[0];
+    if (typeof assembleIdx == "number" && Data.projects?.[assembleIdx]) {
+        await Package.assemble(Data.projects[assembleIdx]);
+        Window.this.close();
+        return;
+    }
+  }
+
   document.timer(10, () => Window.this.state = Window.WINDOW_SHOWN);
   Package.checkForImageMagic(function(found) {
     if (found) return;
@@ -71,18 +83,20 @@ export class ProjectView extends Element {
       this.$("form").value = Data.project;
       document.$("button#assemble").state.disabled = !ProjectView.validate(Data.project);
     });
-    if (Data.project)
+    if (Data.project) {
       this.componentUpdate();
+      document.post(new Event("current-project-change"));
+    }
   }
 
   static validate(vals) {
     return vals.name &&
-        vals.exe &&
-        vals.resources &&
-        vals.entryFileExists &&
-        vals.targets &&
-        vals.targets.length &&
-        vals.out;
+      vals.exe &&
+      vals.resources &&
+      vals.entryFileExists &&
+      vals.targets &&
+      vals.targets.length &&
+      vals.out;
   }
 
   renderEmpty() {
@@ -109,7 +123,7 @@ export class ProjectView extends Element {
         <label>Resources</label>
               <FolderSelector(resources) novalue="app resources folder"/>
         <label>Entry file</label>
-              <input|text(entry) novalue="main.htm was not found" readonly/>
+              <input|text(entry) novalue="entry file was not found" readonly/>
         <label>Name</label>
               <input|text(productName) novalue="product name"/>
         <label>Version</label>
@@ -158,12 +172,13 @@ export class ProjectView extends Element {
 
   updateForm(form) {
     const vals = form.value;
-    vals.entryFileExists = fs.$stat(`${vals.resources}/main.htm`) ? true : false;
+    const entryFile = ["run.js", "index.htm", "main.htm"].find(f => fs.$stat(`${vals.resources}/${f}`));
+    vals.entryFileExists = !!entryFile;
 
     Data.updateCurrentProject(vals);
 
     this.$("button#assemble").state.disabled = !ProjectView.validate(vals);
-    this.$("input(entry)").value = vals.entryFileExists ? "main.htm found" : "";
+    this.$("input(entry)").value = entryFile ? `${entryFile} found` : "";
   }
 
   ["on click at button#assemble"]() {

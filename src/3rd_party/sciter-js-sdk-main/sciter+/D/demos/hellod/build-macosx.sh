@@ -1,0 +1,2 @@
+../../../../bin/macosx/packfolder res resources.bin -binary
+ldmd2 dsciter.d -i -I "../.." -J "." -od "../../../../build/macosx/dobj" -of "../../../../bin/macosx/dsciter" -O -release --link-defaultlib-shared

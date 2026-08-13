@@ -647,6 +647,10 @@ public:
       engine_instance->set_allowWindowOpen(val);
   }
 
+  void set_allowContextMenu(const std::string& val) {
+      engine_instance->set_allowContextMenu(val);
+  }
+
   std::string currentSrc() {
       return engine_instance->currentSrc();
   }

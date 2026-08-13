@@ -1,0 +1,25 @@
+﻿<html>
+  <head>
+    <title>Basic UI translation sample</title>
+    
+    <style></style>
+
+    <script|module>
+      // NOTE: i18n.js must be loaded before app.js and in separate scipt element
+      import {loadTranslation} from "./i18n.js";
+      loadTranslation("ru");
+    </script>
+    
+    <script|module>
+      import {App} from "./app.js";
+
+      document.body.append(<App />);
+
+    </script>
+    
+  </head>
+  <body>
+    <h2>Basic UI translation sample</h2>
+  </body>
+</html>
+

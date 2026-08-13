@@ -44,20 +44,26 @@ typedef struct SCITER_X_MSG
 
 typedef enum SL_TARGET {
   SL_TARGET_BITMAP,
+  SL_TARGET_OPENGL, 
+  SL_TARGET_OPENGLES,
   SL_TARGET_DX9_TEXTURE,
   SL_TARGET_DX11_TEXTURE,
 } SL_TARGET;
+
+typedef void (*glFunctionPointer)(void);
+typedef glFunctionPointer (*glGetProcAddress)(const char* proc);
 
 typedef struct SCITER_X_MSG_CREATE
 {
   SCITER_X_MSG    header;
   SL_TARGET       backend;
-  LPVOID device;   // e.g. ID3D11Device*, IDirect3DDevice9*, etc.
- 
+  LPVOID          device;   // e.g. ID3D11Device*, IDirect3DDevice9*, etc.
+                            // or glGetProcAddress , like SDL_GL_GetProcAddress
 #ifdef __cplusplus
    SCITER_X_MSG_CREATE(SL_TARGET backendType, LPVOID pdevice = NULL )
      : header(SXM_CREATE), backend(backendType), device(pdevice) {
    }
+
 #endif
 } SCITER_X_MSG_CREATE;
 

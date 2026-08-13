@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+    div 
+    {
+      border:1px solid black;
+      width:max-content;
+    }
+    
+    div > text { color:red; margin-top:*; text-align:center; width:*; }
+    
+    .filtered {
+      filter: fe-turbulence(base-frequency:0.025, num-octaves:2, result:"turbulence")
+              fe-displacement-map(in2: "turbulence", scale:50%, x-channel-selector:"R", y-channel-selector:"G");
+    }
+
+    </style>
+  </head>
+<body>
+
+<div>
+  <picture src="images/diamond.png" />
+  <text>original</text>
+</div>  
+<div>
+  <picture src="images/diamond.png" .filtered/>
+  <text>turbulence</text>
+</div>
+
+</body>
+</html>

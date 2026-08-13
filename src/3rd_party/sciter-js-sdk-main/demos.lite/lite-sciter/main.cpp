@@ -1,7 +1,17 @@
 
-#define SCITER_LITE_D11
+// uncomment one of these:
+
+//  D11 texture target
+//#define SCITER_LITE_D11
+
+//  D9 texture target
 //#define SCITER_LITE_D9 -- NOTE: DX9 backend is not available at the moment
+
+//  bitmap target (slow rasterization by CPU)
 //#define SCITER_LITE_BITMAP
+
+//  OpenGL current context target
+#define SCITER_LITE_OPENGL
 
 // SCITER {
 #include "sciter-x.h"
@@ -14,10 +24,18 @@
 #include "glfw-bitmap.h"
 #include "glfw-dx11.h"
 #include "glfw-dx9.h"
+#include "glfw-opengl.h"
 
 #include "aux-fs.h"
 
 #include "facade-resources.cpp"
+
+#if defined(SCITER_LITE_OPENGL)
+  static glFunctionPointer GLGetProcAddress(const char* procName) {
+    return glfwGetProcAddress(procName);
+  }
+#endif
+
 
 static void error_callback(int error, const char* description)
 {
@@ -71,13 +89,20 @@ int main(int argc, char *argv[])
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
+#if defined(SCITER_LITE_OPENGL)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+#else 
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
+
     //sciter::debug_output_console yes;
 
     SciterSetOption(NULL, SCITER_SET_DEBUG_MODE, TRUE);
 
     glfwSetErrorCallback(error_callback);
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     GLFWwindow* window = glfwCreateWindow(700, 900, "Sciter.Lite example", NULL, NULL);
     if (!window)
@@ -85,6 +110,10 @@ int main(int argc, char *argv[])
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
+
+#if defined(SCITER_LITE_OPENGL)
+    glfwMakeContextCurrent(window);
+#endif
 
     SciterWindowAttachEventHandler(window, DomEventProc, NULL, HANDLE_SCRIPTING_METHOD_CALL);
 
@@ -104,7 +133,9 @@ int main(int argc, char *argv[])
     auto resize_buffer = [&]() {
       ctx.resize(used_width, used_height);
       SL_SURFACE surface = {};
-#if defined(SCITER_LITE_D11)
+#if defined(SCITER_LITE_OPENGL)
+      ; // no dedicated surface handle - drawing on default GL context
+#elif defined(SCITER_LITE_D11)
       surface.texture = ctx.texture();
 #elif defined(SCITER_LITE_D9)
       surface.texture = ctx.texture();
@@ -119,7 +150,10 @@ int main(int argc, char *argv[])
     // SCITER+
       // create the engine and associate it with window:
 
-#if defined(SCITER_LITE_D11)
+#if defined(SCITER_LITE_OPENGL)
+      // NOTE: In case of OpenGL we are passing "OpenGL interface" pointer so Sciter will use the same GL implementation 
+    SciterProcX(window, SCITER_X_MSG_CREATE(SL_TARGET_OPENGL, (LPVOID)GLGetProcAddress));
+#elif defined(SCITER_LITE_D11)
       SciterProcX(window, SCITER_X_MSG_CREATE(SL_TARGET_DX11_TEXTURE,ctx.d11_device.Get() ));
 #elif defined(SCITER_LITE_D9)
       SciterProcX(window, SCITER_X_MSG_CREATE(SL_TARGET_DX9_TEXTURE, ctx.device()));
@@ -287,7 +321,7 @@ UINT on_load_data(LPSCN_LOAD_DATA pnmld) {
     // try to get them from archive first
     aux::bytes adata = sciter::archive::instance().get(wu.start + 11);
     if (adata.length)
-      ::SciterDataReady(pnmld->hwnd, pnmld->uri, adata.start, adata.length);
+      SciterDataReady(pnmld->hwnd, pnmld->uri, adata.start, adata.length);
   }
   return LOAD_OK;
 }

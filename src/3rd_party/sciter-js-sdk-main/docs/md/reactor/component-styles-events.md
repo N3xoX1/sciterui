@@ -135,14 +135,19 @@ That format is a standard JS/ES2020 way of defining functions with [computable n
 ```js
 ["on eventname"](event) {}
 ["on eventname at selector"](event, selectorElement) {}
+["on eventname of selector"](event, selectorElement) {}
 ```
 
 Where:  
 
 * **on**\[space\] part marks the function as event handler;     
-* *eventname* is a name of event - either standard HTML's one like click, input, focus, ... or custom event name;     
-* \[space\]**at**\[space\], if present, signifies that selector will follow;    
-* *selector* is CSS selector of child element inside this element. When event handler will be triggered selectorElement argument of the function will get reference to the matching child that generated the event.   
+* *eventname* is a name of event - either standard HTML's one like click, input, focus, ... or custom event name;
+  * the *eventname* may start with `^` symbol like `^click` to handle event in sinking phase (before the event will be dispatched to children).
+  * the *eventname* may contain namespace suffix like `click.mynamespace`.
+* \[space\]**at**\[space\], if present, signifies that selector will follow;
+  * *selector* here is a CSS selector of a child element **inside** this component. When the event handler will be triggered *selectorElement* argument of the function will get reference to the selector matching child and `event.target` will contain reference to the element that generated the event.
+* \[space\]**of**\[space\], if present, signifies that selector will follow;
+  * *selector* here is a CSS selector of a child element **that generates** the event. When the event handler will be triggered *selectorElement* argument of the function will get reference to that matching child elemt.   
 
 Such class based event handlers are especially effective in cases when there are many elements at the same time on screen. Such event subscription schema does not require addEventHandler calls for each element.
 

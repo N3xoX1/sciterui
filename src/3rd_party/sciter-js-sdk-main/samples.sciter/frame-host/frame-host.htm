@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style></style>
+        <script>
+
+const frame = document.$("frame");
+
+document.on("historystatechange", "frame#content", (evt, frame) => {
+  document.$("button#home").state.disabled = frame.history.length == 0;
+  document.$("button#back").state.disabled = frame.history.length == 0;
+  document.$("button#fore").state.disabled = frame.history.forwardLength == 0;
+});
+
+document.on("click", "button#home", () => {
+  frame.history.go(-frame.history.length);
+});
+
+document.on("click", "button#back", () => {
+  frame.history.back();
+  return true;
+});
+
+document.on("click", "button#fore", () => {
+  frame.history.forward();
+  return true;
+});
+
+document.on("click", "#go-a", evt => {
+  // first try to restore section-a.htm from history 
+  if(!frame.history.go("section-a.htm")) 
+    // it is not in history, load it
+    frame.frame.loadFile("section-a.htm"); 
+});
+
+document.on("click", "#go-b", evt => {
+  if(!frame.history.go("section-b.htm"))
+    frame.frame.loadFile("section-b.htm");
+});
+
+
+
+        </script>
+    </head>
+    <body>
+
+<button#home>Home</button>
+<button#back disabled>Back</button>
+<button#fore disabled>Forward</button>
+
+
+<button#go-a>Load or Restore section-a</button>
+<button#go-b>Load or Restore section-b</button>
+
+
+<frame#content history src="section-home.htm" />
+
+    </body>
+</html>

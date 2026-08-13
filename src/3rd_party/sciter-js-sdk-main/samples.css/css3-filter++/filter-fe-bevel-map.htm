@@ -1,0 +1,55 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+
+    div 
+    {
+      width:30vw;
+      height:30vh;
+      border-radius: 48px;
+    }
+
+    .bevel-map {
+       filter: fe-bevel-map(bevel-size:64px, bevel-curve: quint);
+    }
+
+    dl {
+      flow:row(dt, dd);
+    }
+    dl > dt { font-weight:bold; width:max-content;}
+    dl > dd { width:*;}
+
+    </style>
+    <script></script>
+  </head>
+<body>
+
+<h2>Bevel map</h2>
+
+<div.bevel-map />
+
+<p>fe-bevel-map is a special filter / image generator, used as a source for fe-displacement-map to generate effect of liquid glass</p>
+
+<p>parameters:</p>
+
+<dl>
+  <dt>bevel-size</dt>
+  <dd>bevel width - width of transition from border to grey area in the middle, can be interpretted as elevation;</dd>
+  <dt>bevel-curve</dt>
+  <dd>shape of the bevel, one of:
+     <ul>
+        <li>linear</li>
+        <li>quad</li>
+        <li>cubic</li>
+        <li>quart</li>
+        <li>quint</li>
+        <li>circular</li>
+    </ul>
+  </dd>
+  <p>dimensions and border-radius are taken from the element this fillter is applied to.</p>  
+</dl>
+
+
+</body>
+</html>

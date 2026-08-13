@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style>
+
+body { margin:0; }
+
+main  {
+    flow:horizontal;
+    size:*
+}
+
+main > form.selector {
+    width: max-content;
+    height: *;
+    border-right: 1px solid;
+}
+
+main > form.selector > button {
+    display: block;
+    margin: 0.5em;
+}
+
+main > section {
+    width: *;
+    height: *;
+    overflow:auto;
+    padding:1em;
+}
+
+        </style>
+        <script|module>
+
+import {fs} from "@sys"; 
+import * as MD from "@markdown";
+
+//const md = fs.sync.readFile(__DIR__ + "md/spec.md");
+
+//document.body.innerHTML = MD.toHTML(md);
+//MD.toElement(document.body, md);
+
+function Markdown({md}) {
+   return <section styleset="markdown.css#markdown">
+      { MD.toFragment(md) }
+   </section>;
+}
+
+
+class Application extends Element {
+    files;
+    md = "← Select file to see markdown rendering";
+
+    constructor() {
+       super();
+       let list = fs.$readdir(__DIR__ + "md");
+       this.files = list.map( fd => fd.name );
+    }
+
+    render() {
+        return <main>
+            <form.selector>
+              { this.files.map(fn => <button|radio(file) value={fn}>{fn}</button>) }
+            </form>
+            <Markdown md={this.md} />
+        </main>;
+    }
+
+    ["on change of form.selector"](evt,form) {
+        console.log("on change of form.selector");
+        const fn = __DIR__ + "md/" + form.value.file;
+        this.componentUpdate({md:fs.sync.readFile(fn)});
+        return true;
+    }
+
+}
+
+function TestComponent() {
+  const list = ["Veni", "Vidi", "Vici"];
+
+  return <section>
+      TestComponent component says:
+      <ol>{ list.map(word => <li>{word}</li>)}</ol>
+    </section>
+}
+
+globalThis.TestComponent = TestComponent;
+
+document.body.append(<Application />);
+
+/*const fn = __DIR__ + "md/spec.md";
+const md = fs.sync.readFile(fn);
+document.body.append(<div>
+    <Markdown md={md} />
+</div>);*/
+
+
+        </script>
+    </head>
+    <body>
+
+    </body>
+</html>

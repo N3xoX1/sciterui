@@ -1,0 +1,61 @@
+<html 
+  window-frame=transparent
+  window-width=640px 
+  window-height=480px
+  window-resizable=true >
+    <head>
+        <title>Test</title>
+        <style>
+
+html { 
+  background: transparent; 
+}
+
+body {
+  border:3px solid gold;
+  size:*;
+  margin:0;
+}
+
+body > caption {
+  width: max-content;
+  padding: 0.25em 1em;
+  margin: 0 *;
+  background:gold;
+  border-radius: 0 0 6px 6px;
+}
+
+icon {
+  behavior:clickable;
+  cursor:pointer;
+}
+
+footer {
+  size:10px;
+  margin:* 0 0 *;
+  background:gold;
+  border-radius: 6px 0 0 0;
+}
+
+        </style>
+        <script>
+
+Window.this.isTopmost = true;
+Window.this.shape(document.body);
+
+document.on("click", "icon|window-close", function() {
+  Window.this.close();
+});
+
+
+        </script>
+    </head>
+
+    <body>
+<caption role="window-caption">
+  Caption
+  <icon|window-close />
+</caption>
+  <footer/>
+    </body>
+</html>

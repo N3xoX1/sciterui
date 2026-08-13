@@ -7,7 +7,7 @@
         <style>
 
 html { 
-  background:transparent; 
+  background: rgba(0,0,0,0); 
   overflow:visible;
   width:420px;
   height: 420px;
@@ -19,7 +19,6 @@ body {
   border-radius:50%;
   margin:*;
   background:gold;
-  box-shadow:2px 2px 4px #333;
   content-vertical-align: middle;
   text-align: center;
   transform: scale(0.1);
@@ -38,11 +37,19 @@ body > button {
         </style>
         <script>
 
+//Window.this.mousePassthrough = true; // enable it for "HUD" window
+Window.this.isTopmost = true;
+
 document.on("click", "button#close", function() {
   Window.this.close();
 });
 
 post(function() { document.body.classList.add("ready") });
+
+document.timer(400ms, function() {
+  // setup opaque window shape (after animation). For mouse click-through purposes.
+  Window.this.shape(document.body);  
+});
 
         </script>
     </head>

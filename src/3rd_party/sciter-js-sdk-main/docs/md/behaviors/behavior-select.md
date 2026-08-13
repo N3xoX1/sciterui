@@ -19,7 +19,7 @@ The `<select>` may contain `<option>` elements contained in arbitrary markup.
 
 The behavior treats `<option>'s` or any other DOM element with attribute `role="option"` as a selectable entity.
 
-Selected option will have `:current`  state flag set.
+Selected option will have `:checked` state flag set.
 
 Examples, simple select:
 

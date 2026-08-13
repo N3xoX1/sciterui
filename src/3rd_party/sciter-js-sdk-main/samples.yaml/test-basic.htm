@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <title>Test</title>
+        <style></style>
+        <script type="yaml">
+
+veni: I came
+vidi: I saw
+vici: I conquered
+# This is a sub object
+sub object: 
+  int: 42
+  float: 3.1415
+  string: some string
+  bool: true
+  null: null
+  date: 2026-08-22
+  array: [1, 2, 3, 4, 5]
+  map: { key1: value1, key2: value2, key3: value3 }
+
+        </script>
+
+        <script type="module">
+
+          import {parse} from "@yaml";
+
+          const text = document.$("script|yaml").innerText;
+          
+          const val = parse(text);
+
+          document.body.append(<div>
+            <h3>YAML:</h3>
+            <pre>{ text }</pre>
+            <h3>JS:</h3>
+            <pre>{ JSON.stringify(val, null, "  ") }</pre>
+            <h3>sub object/date is Date</h3>
+            <pre>{ val["sub object"].date instanceof Date }</pre>
+          </div>);
+          
+
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

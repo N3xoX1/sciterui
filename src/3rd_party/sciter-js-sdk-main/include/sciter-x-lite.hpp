@@ -39,15 +39,15 @@ namespace sciter
   {
   public:
     lite(SL_TARGET backend = SL_TARGET_BITMAP) { // or GFX_LAYER_D2D
-      SBOOL r = SciterProcX(this, SCITER_X_MSG_CREATE(backend));
+      SBOOL r = SciterProcX(HWINDOW(this), SCITER_X_MSG_CREATE(backend));
       assert(r);
       if (r) {
         setup_callback();
-        sciter::attach_dom_event_handler(this, this);
+        sciter::attach_dom_event_handler(HWINDOW(this), this);
       }
     }
     virtual ~lite() {
-      SciterProcX(this, SCITER_X_MSG_DESTROY());
+      SciterProcX(HWINDOW(this), SCITER_X_MSG_DESTROY());
     }
 
     virtual long asset_add_ref() { return 0; /* life cycle is governed by owner */ }
@@ -55,19 +55,19 @@ namespace sciter
 
     bool load(aux::bytes utf8_html, const WCHAR* base_url = 0)
     {
-      return FALSE != ::SciterLoadHtml(this, utf8_html.start, UINT(utf8_html.length), base_url);
+      return FALSE != SciterLoadHtml(HWINDOW(this), utf8_html.start, UINT(utf8_html.length), base_url);
     }
     bool load(aux::chars utf8_html, const WCHAR* base_url = 0)
     {
-      return FALSE != ::SciterLoadHtml(this, (LPCBYTE)utf8_html.start, UINT(utf8_html.length), base_url);
+      return FALSE != SciterLoadHtml(HWINDOW(this), (LPCBYTE)utf8_html.start, UINT(utf8_html.length), base_url);
     }
     bool load(const WCHAR* url)
     {
-      return FALSE != ::SciterLoadFile(this, url);
+      return FALSE != SciterLoadFile(HWINDOW(this), url);
     }
 
   // sciter::host traits:
-    HWINDOW   get_hwnd() const { return (LPVOID)this; }
+    HWINDOW   get_hwnd() const { return (HWINDOW)this; }
     HINSTANCE get_resource_instance() const { return NULL; }
 
    

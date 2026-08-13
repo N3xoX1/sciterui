@@ -41,6 +41,7 @@ namespace webview
           public ICoreWebView2PermissionRequestedEventHandler,
           public ICoreWebView2NavigationStartingEventHandler,
           public ICoreWebView2NavigationCompletedEventHandler,
+          public ICoreWebView2ContextMenuRequestedEventHandler,
           public ICoreWebView2DocumentTitleChangedEventHandler,
           public ICoreWebView2NewWindowRequestedEventHandler,
           public ICoreWebView2WindowCloseRequestedEventHandler
@@ -63,6 +64,7 @@ namespace webview
         STDMETHODIMP Invoke(ICoreWebView2* sender, ICoreWebView2PermissionRequestedEventArgs* args);
         STDMETHODIMP Invoke(ICoreWebView2* sender, ICoreWebView2NavigationStartingEventArgs* args);
         STDMETHODIMP Invoke(ICoreWebView2* sender, ICoreWebView2NavigationCompletedEventArgs* args);
+        STDMETHODIMP Invoke(ICoreWebView2* sender, ICoreWebView2ContextMenuRequestedEventArgs* args);
         STDMETHODIMP Invoke(ICoreWebView2* sender, ICoreWebView2NewWindowRequestedEventArgs* args);
         STDMETHODIMP Invoke(ICoreWebView2* sender, IUnknown* args);
 
@@ -108,6 +110,7 @@ namespace webview
         void set_navigation_callback(const navigation_callback_t& cb);
         void set_msg_callback(const msg_callback_t& cb);
         void set_allowWindowOpen(const std::string& val);
+        void set_allowContextMenu(const std::string& val);
         std::string currentSrc();
 
         ICoreWebView2 *m_webview = nullptr;
@@ -115,6 +118,7 @@ namespace webview
         navigation_callback_t m_navigationCallback;
         msg_callback_t m_msgCallback;
         std::string m_allowWindowOpen = "nopopup";
+        std::string m_allowContextMenu = "true";
         bool m_debugtools = false;
 
     protected:
