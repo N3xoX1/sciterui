@@ -200,7 +200,7 @@ void WidgetPageNav::HideCurrentPage(DisplayPage * page)
     }
     if (page->content.IsValid())
     {
-        page->content.Detach();
+        page->content.SetStyleAttribute("display", "none");
     }
     m_currentPage.clear();
     page->elem.SetState(0, SciterElement::STATE_CURRENT | SciterElement::STATE_VISITED, true);
@@ -241,7 +241,6 @@ void WidgetPageNav::ShowPage(DisplayPage * page)
 {
     if (page->content.IsValid())
     {
-        m_targetFrame.Insert(page->content, m_targetFrame.GetChildCount());
         page->content.SetStyleAttribute("display", "block");
     }
     else
