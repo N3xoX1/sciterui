@@ -1,7 +1,7 @@
 #pragma once
-#include <sciter_ui.h>
 #include "std_string.h"
 #include <memory>
+#include <sciter_ui.h>
 
 namespace SciterUI
 {
@@ -10,7 +10,8 @@ suinterface IModuleResource
     virtual bool LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t[]> & data, uint32_t & size) = 0;
 };
 
-class ModuleResource : public IModuleResource
+class ModuleResource :
+    public IModuleResource
 {
 public:
     ModuleResource();
@@ -18,14 +19,15 @@ public:
 
     bool LoadModule(const char * path);
 
-    // IResourceModule
+    // IModuleResource
     bool LoadResource(const sui_wchar * name, const sui_wchar * type, std::unique_ptr<uint8_t[]> & data, uint32_t & size);
 
 private:
     ModuleResource(const ModuleResource &) = delete;
     ModuleResource & operator=(const ModuleResource &) = delete;
 
-    void * m_module;
+    struct Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace SciterUI
