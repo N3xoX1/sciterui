@@ -491,17 +491,28 @@ void Path::SetToModuleDirectory()
         buffPath.resize(bufferSize);
     }
 #else
-    char buf[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
-    if (len != -1)
+    size_t bufferSize = 4096;
+    std::vector<char> buffPath(bufferSize);
+
+    while (true)
     {
-        buf[len] = '\0';
-        m_path = buf;
-        SetNameExtension("");
-    }
-    else
-    {
-        m_path = "";
+        ssize_t result = readlink("/proc/self/exe", buffPath.data(), bufferSize);
+
+        if (result < 0)
+        {
+            m_path = "";
+            return;
+        }
+
+        if ((size_t)result < bufferSize)
+        {
+            m_path.assign(buffPath.data(), (size_t)result);
+            SetNameExtension("");
+            return;
+        }
+
+        bufferSize *= 2;
+        buffPath.resize(bufferSize);
     }
 #endif 
 }
