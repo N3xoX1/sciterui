@@ -1,3 +1,5 @@
+#include "debug_break.h"
+
 #include <sciter_value.h>
 
 SciterValue::SciterValue() :
@@ -47,7 +49,7 @@ bool SciterValue::GetValueBool(void) const
 {
     if (m_type != TYPE_BOOL)
     {
-        __debugbreak();
+        SciterUI::DebugBreak();
         return false;
     }
     return m_valueInt != 0;
@@ -57,7 +59,7 @@ int32_t SciterValue::GetValueInt(void) const
 {
     if (m_type != TYPE_INT32_T)
     {
-        __debugbreak();
+        SciterUI::DebugBreak();
         return 0;
     }
     return m_valueInt;
@@ -67,8 +69,9 @@ const std::string & SciterValue::GetValueStr(void) const
 {
     if (m_type != TYPE_STRING)
     {
-        __debugbreak();
-        return 0;
+        SciterUI::DebugBreak();
+        static const std::string empty;
+        return empty;
     }
     return m_valueStr;
 }

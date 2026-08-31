@@ -1,3 +1,4 @@
+#include "debug_break.h"
 #include "sciter.h"
 #include "sciter_element.h"
 #include "sciter_window.h"
@@ -403,7 +404,7 @@ int Sciter::AttachWidgetProc(WidgetCallbackInfo * info, SCITER_ELEMENT he, uint3
         }
         else
         {
-            __debugbreak();
+            DebugBreak();
         }
     }
     return 0;

@@ -1,3 +1,4 @@
+#include "debug_break.h"
 #include "sciter_value_internal.h"
 #include "std_string.h"
 
@@ -5,7 +6,7 @@
 
 SciterValue ConvertToSciterValue(const sciter::value & rv)
 {
-    UINT Type, Units;
+    UINT Type = 0, Units = 0;
     ValueType(&rv, &Type, &Units);
 
     if (Type == T_BOOL)
@@ -37,7 +38,7 @@ SciterValue ConvertToSciterValue(const sciter::value & rv)
             return SciterValue(SciterUI::stdstr().FromUTF16(c));
         }
     }
-    __debugbreak();
+    SciterUI::DebugBreak();
     return SciterValue();
 }
 
@@ -55,6 +56,6 @@ sciter::value ConvertFromSciterValue(const SciterValue & rv)
     {
         return sciter::value(rv.GetValueStr());
     }
-    __debugbreak();
+    SciterUI::DebugBreak();
     return sciter::value();
 }
