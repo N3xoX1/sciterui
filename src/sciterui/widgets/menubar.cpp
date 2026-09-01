@@ -10,7 +10,7 @@
 
 #include <value.h>
 #include <sciter-x-behavior.h>
-#include <sciter-x-api.h>
+#include "sciter_hwindow.h"
 
 class WidgetMenuBar :
     public std::enable_shared_from_this<WidgetMenuBar>,
@@ -383,7 +383,7 @@ void WidgetMenuBar::Attached(SCITER_ELEMENT element, IBaseElement * baseElement)
     if (hwnd != nullptr)
     {
         HELEMENT hRoot = 0;
-        if (SciterGetRootElement((HWND)hwnd, &hRoot) == SCDOM_OK && hRoot != 0)
+        if (SciterGetRootElement((SciterUI::SciterHWINDOW)hwnd, &hRoot) == SCDOM_OK && hRoot != 0)
         {
             m_keySinkRoot = SciterElement(hRoot);
         }

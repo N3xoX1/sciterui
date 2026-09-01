@@ -4,13 +4,11 @@
 #include "sciter_dpi.h"
 #include "sciter_handler_internal.h"
 #include "std_string.h"
-#include <sciter-x-api.h>
-#include <sciter-x-def.h>
+#include "sciter_hwindow.h"
 #include <sciter_handler.h>
 #include <algorithm>
 #include <stdint.h>
 
-#undef HWINDOW
 #undef max
 #undef min
 
@@ -35,7 +33,7 @@ SciterWindow::~SciterWindow()
 
 void SciterWindow::Show()
 {
-    ::SciterWindowExec((HWND)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
+    ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
 }
 
 bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags)
@@ -58,7 +56,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
     Frame.right = x + width;
     Frame.bottom = y + height;
 
-    m_hWnd = ::SciterCreateWindow(flags, (Frame.right - Frame.left) > 0 ? &Frame : nullptr, nullptr, this, (HWND)parentWinow);
+    m_hWnd = ::SciterCreateWindow(flags, (Frame.right - Frame.left) > 0 ? &Frame : nullptr, nullptr, this, (SciterHWINDOW)parentWinow);
 #endif
     if (m_hWnd != nullptr)
     {
@@ -67,14 +65,14 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
             m_hParent = parentWinow;
             EnableWindow((HWND)parentWinow, FALSE);
         }
-        SciterSetOption((HWND)m_hWnd, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
+        SciterSetOption((SciterHWINDOW)m_hWnd, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
 
         m_sciter.WindowCreated(this);
         LoadHtml(htmlFile);
         SetDefaultWindowSize(x, y, width, height);
         if (!startHidden)
         {
-            ::SciterWindowExec((HWND)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
+            ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
         }
     }
     return m_hWnd != nullptr;
@@ -129,7 +127,7 @@ void SciterWindow::FixMinSize()
         return;
     }
 
-    SciterUpdateWindow((HWND)m_hWnd);
+    SciterUpdateWindow((SciterHWINDOW)m_hWnd);
 
 #ifdef WIN32
     int scaledLayoutWidth = 0;
@@ -149,9 +147,9 @@ void SciterWindow::FixMinSize()
         }
     }
 
-    const uint32_t minWidth = SciterGetMinWidth((HWND)m_hWnd);
+    const uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
     const uint32_t widthForHeight = scaledLayoutWidth > 0 ? static_cast<uint32_t>(scaledLayoutWidth) : minWidth;
-    const uint32_t minHeight = SciterGetMinHeight((HWND)m_hWnd, widthForHeight);
+    const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, widthForHeight);
 
     int width = static_cast<int>(scaledLayoutWidth > 0 ? std::max(minWidth, static_cast<uint32_t>(scaledLayoutWidth)) : minWidth);
     int height = static_cast<int>(scaledLayoutHeight > 0 ? std::max(minHeight, static_cast<uint32_t>(scaledLayoutHeight)) : minHeight);
@@ -164,8 +162,8 @@ void SciterWindow::FixMinSize()
     {
         return;
     }
-    uint32_t minWidth = SciterGetMinWidth((HWND)m_hWnd);
-    uint32_t minHeight = SciterGetMinHeight((HWND)m_hWnd, minWidth);
+    uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
+    uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, minWidth);
     uint32_t currentWidth = (rc.right - rc.left);
     uint32_t currentHeight = (rc.bottom - rc.top);
     uint32_t targetWidth = currentWidth < minWidth ? minWidth : currentWidth;
@@ -184,18 +182,18 @@ HWINDOW SciterWindow::GetHandle() const
 
 uint32_t SciterWindow::GetMinWidth() const
 {
-    return SciterGetMinWidth((HWND)m_hWnd);
+    return SciterGetMinWidth((SciterHWINDOW)m_hWnd);
 }
 
 uint32_t SciterWindow::GetMinHeight(uint32_t width) const
 {
-    return SciterGetMinHeight((HWND)m_hWnd, width);
+    return SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
 }
 
 SCITER_ELEMENT SciterWindow::GetRootElement(void) const
 {
     HELEMENT h = 0;
-    SciterGetRootElement((HWND)m_hWnd, &h);
+    SciterGetRootElement((SciterHWINDOW)m_hWnd, &h);
     return h;
 }
 
@@ -358,7 +356,7 @@ void SciterWindow::Bind()
     if (m_hWnd && !m_bound)
     {
         m_bound = true;
-        SciterSetCallback((HWND)m_hWnd, (LPSciterHostCallback)SciterCallback, this);
+        SciterSetCallback((SciterHWINDOW)m_hWnd, (LPSciterHostCallback)SciterCallback, this);
     }
 }
 
@@ -366,7 +364,7 @@ bool SciterWindow::LoadHtml(const char * url)
 {
     Bind();
     sui_ustring loadUrl = stdstr_f(sui_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
-    return FALSE != ::SciterLoadFile((HWND)m_hWnd, loadUrl.c_str());
+    return FALSE != ::SciterLoadFile((SciterHWINDOW)m_hWnd, loadUrl.c_str());
 }
 
 bool SciterWindow::GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventProc, uint32_t & subscription)
@@ -494,7 +492,7 @@ LRESULT SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
     {
         return LOAD_DISCARD;
     }
-    ::SciterDataReady((HWND)pnmld->hwnd, pnmld->uri, data.get(), dataSize);
+    ::SciterDataReady((SciterHWINDOW)pnmld->hwnd, pnmld->uri, data.get(), dataSize);
     return LOAD_OK;
 }
 

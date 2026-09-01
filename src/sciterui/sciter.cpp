@@ -4,9 +4,7 @@
 #include "sciter_window.h"
 #include "std_string.h"
 
-#include "sciter-x-api.h"
-
-#undef HWINDOW
+#include "sciter_hwindow.h"
 
 namespace SciterUI
 {
@@ -30,7 +28,7 @@ bool Sciter::Initialize(const char * baseLanguage, const char * currentLanguage,
 
 void Sciter::UpdateWindow(HWINDOW hwnd)
 {
-    SciterUpdateWindow((HWND)hwnd);
+    SciterUpdateWindow((SciterHWINDOW)hwnd);
 }
 
 bool Sciter::AttachHandler(SCITER_ELEMENT elemHandle, const char * riid, void * pinterface)
@@ -288,7 +286,7 @@ LRESULT CALLBACK Sciter::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     }
     case WM_ACTIVATE: {
         HELEMENT h = 0;
-        SciterGetRootElement((HWND)hwnd, &h);
+        SciterGetRootElement((SciterHWINDOW)hwnd, &h);
         SciterElement root(h);
         if (root.IsValid())
         {
@@ -298,7 +296,7 @@ LRESULT CALLBACK Sciter::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     }
     case WM_GETMINMAXINFO: {
         HELEMENT h = 0;
-        SciterGetRootElement((HWND)hwnd, &h);
+        SciterGetRootElement((SciterHWINDOW)hwnd, &h);
         SciterElement root(h);
         if (root.IsValid())
         {

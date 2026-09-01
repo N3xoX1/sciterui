@@ -3,8 +3,7 @@
 #include <sciter_value_internal.h>
 
 #include <sciter-x.h>
-
-#undef HWINDOW
+#include "sciter_hwindow.h"
 
 namespace 
 {
@@ -245,7 +244,7 @@ void SciterElement::RemoveAttribute(const char* name) const
 HWINDOW SciterElement::GetElementHwnd(bool RootWindow) const
 {
     HWINDOW hwnd = 0;
-    SCDOM_RESULT r = SciterGetElementHwnd((HELEMENT)m_he, (HWND *)&hwnd, RootWindow);
+    SCDOM_RESULT r = SciterGetElementHwnd((HELEMENT)m_he, (SciterUI::SciterHWINDOW *)&hwnd, RootWindow);
     assert(r == SCDOM_OK);
     (void)r;
     return hwnd;
