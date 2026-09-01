@@ -50,7 +50,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
     DWORD style = childWindow ? (DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS) : (WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
     m_hWnd = CreateWindowEx(exStyle, m_sciter.WindowClass().c_str(), L"", style, x, y, width, height, (HWND)parentWinow, nullptr, GetModuleHandle(nullptr), &m_sciter);
 #else
-    RECT Frame;
+    RECT Frame{};
     Frame.left = x;
     Frame.top = y;
     Frame.right = x + width;
@@ -63,7 +63,9 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
         if (childWindow)
         {
             m_hParent = parentWinow;
+#ifdef WIN32
             EnableWindow((HWND)parentWinow, FALSE);
+#endif
         }
         SciterSetOption((SciterHWINDOW)m_hWnd, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
 
@@ -80,6 +82,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
 
 void SciterWindow::CenterWindow(void)
 {
+#ifdef WIN32
     int32_t xScreen = GetSystemMetrics(SM_CXSCREEN), x;
     int32_t yScreen = GetSystemMetrics(SM_CYSCREEN), y;
     RECT rc;
@@ -118,6 +121,7 @@ void SciterWindow::CenterWindow(void)
         y = (yScreen - (rc.bottom - rc.top)) / 2;
     }
     SetWindowPos((HWND)m_hWnd, 0, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);
+#endif
 }
 
 void SciterWindow::FixMinSize()
@@ -239,7 +243,11 @@ bool SciterWindow::QueryClose() const
 
 bool SciterWindow::Destroy()
 {
+#ifdef WIN32
     return PostMessage((HWND)m_hWnd, WM_CLOSE, 0, 0) != 0;
+#else
+    return false;
+#endif
 }
 
 void SciterWindow::RunModal()
@@ -281,9 +289,11 @@ void SciterWindow::SetDestroyed(void)
     m_destroyed = true;
     if (m_hParent != nullptr)
     {
+#ifdef WIN32
         EnableWindow((HWND)m_hParent, TRUE);
         SetForegroundWindow((HWND)m_hParent);
         SetFocus((HWND)m_hParent);
+#endif
     }
     for (EventSinks::iterator itr = m_eventSinks.begin(); itr != m_eventSinks.end(); itr++)
     {
@@ -450,8 +460,6 @@ void SciterWindow::SetDefaultWindowSize(int x, int y, int width, int height)
     int h = height;
     ScaleWindowSizeForDpi(m_createParent, w, h);
     SetWindowPos((HWND)m_hWnd, nullptr, x, y, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-#else
-    SetWindowPos((HWND)m_hWnd, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 #endif
 }
 
