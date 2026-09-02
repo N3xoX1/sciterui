@@ -2,7 +2,6 @@
 #include <sciter_element.h>
 #include <widgets/tooltip_host.h>
 #include <map>
-#include <windows.h>
 #include "std_string.h"
 
 namespace SciterUI
@@ -70,25 +69,25 @@ WidgetToolTipHost::WidgetToolTipHost(ISciterUI & sciterUI) :
     m_sciterUI(sciterUI),
     m_tooltipVisible(false)
 {
+    m_mousePos.x = 0;
+    m_mousePos.y = 0;
 }
 
 void WidgetToolTipHost::DisplayPopup(void)
 {
-    POINT mousePos;
-    GetCursorPos(&mousePos);
-    ScreenToClient((HWND)m_host.GetElementHwnd(true), &mousePos);
-
     SciterElement menu = SciterElement(m_host).FindFirst("[window-state=\"shown\"]");
 
     SCITER_POINT sciterMousePos;
-    sciterMousePos.x = mousePos.x + 5;
-    sciterMousePos.y = mousePos.y + 15;
+    sciterMousePos.x = m_mousePos.x + 5;
+    sciterMousePos.y = m_mousePos.y + 15;
     m_sciterUI.PopupShowAt(m_popup, sciterMousePos, 7);
     m_tooltipVisible = true;
 }
 
-bool WidgetToolTipHost::OnMouseMove(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*x*/, uint32_t /*y*/)
+bool WidgetToolTipHost::OnMouseMove(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t x, uint32_t y)
 {
+    m_mousePos.x = x;
+    m_mousePos.y = y;
     if (m_popup.IsValid())
     {
         m_host.SetTimer(TIMER_INTERVAL_MOVETOOLTIP, (uint32_t*)TIMER_ID_MOVETOOLTIP);
