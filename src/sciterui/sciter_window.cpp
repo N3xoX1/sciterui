@@ -160,22 +160,6 @@ void SciterWindow::FixMinSize()
 
     ClampWindowSizeToWorkArea(m_createParent, width, height);
     SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
-#else
-    RECT rc;
-    if (!GetWindowRect((HWND)m_hWnd, &rc))
-    {
-        return;
-    }
-    uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
-    uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, minWidth);
-    uint32_t currentWidth = (rc.right - rc.left);
-    uint32_t currentHeight = (rc.bottom - rc.top);
-    uint32_t targetWidth = currentWidth < minWidth ? minWidth : currentWidth;
-    uint32_t targetHeight = currentHeight < minHeight ? minHeight : currentHeight;
-    if (currentWidth != targetWidth || currentHeight != targetHeight)
-    {
-        SetWindowPos((HWND)m_hWnd, 0, 0, 0, targetWidth, targetHeight, SWP_NOOWNERZORDER | SWP_NOMOVE);
-    }
 #endif
 }
 
@@ -327,7 +311,7 @@ bool SciterWindow::AttachHandler(SCITER_ELEMENT element, const char * riid, void
     if (eventHandler.get())
     {
         SCDOM_RESULT hr = SciterAttachEventHandler((HELEMENT)element, (::LPELEMENT_EVENT_PROC)eventProc, eventHandler.get());
-        if (SUCCEEDED(hr))
+        if (hr == SCDOM_OK)
         {
             m_eventSinks.push_back(RegisteredSink(element, riid, interfacePtr, std::move(eventHandler)));
             return true;
