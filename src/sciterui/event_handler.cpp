@@ -62,14 +62,19 @@ int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
         }
         else if (p->cmd == MOUSE_UP || p->cmd == ((uint32_t)MOUSE_UP | (uint32_t)SINKING))
         {
-            SciterElement element(he);
-            element.ReleaseCapture();
-
-            handler->m_MouseDown = false;
-            element.SetState(0, SciterElement::STATE_PRESSED, true);
-            if (handler->m_InElement)
+            if (handler->m_MouseDown)
             {
-                return clickSink->OnClick(he, p->target, BY_MOUSE_CLICK);
+                SciterElement element(he);
+                element.ReleaseCapture();
+                element.SetState(0, SciterElement::STATE_PRESSED, true);
+
+                const bool inElement = handler->m_InElement;
+                handler->m_MouseDown = false;
+                handler->m_InElement = false;
+                if (inElement)
+                {
+                    return clickSink->OnClick(he, p->target, BY_MOUSE_CLICK);
+                }
             }
         }
         else if (p->cmd == MOUSE_MOVE)
@@ -118,7 +123,8 @@ int EventHandler::DoubleClickHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg
     if (evtg == HANDLE_MOUSE && clickSink)
     {
         MOUSE_PARAMS* p = (MOUSE_PARAMS*)prms;
-        if (p->cmd == MOUSE_DCLICK)
+        const uint32_t event = p->cmd & ~(uint32_t)SINKING & ~(uint32_t)HANDLED;
+        if (event == MOUSE_DCLICK)
         {
             return clickSink->OnDoubleClick(he, p->target);
         }
