@@ -15,6 +15,24 @@
 namespace SciterUI
 {
 
+namespace
+{
+void PumpPendingDraws()
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        if (!SciterExec(SCITER_APP_LOOP_HEARTBIT, 0, 0))
+        {
+            break;
+        }
+        if (!SciterExec(SCITER_APP_LOOP_ITERATION, 0, 0))
+        {
+            break;
+        }
+    }
+}
+} // namespace
+
 SciterWindow::SciterWindow(Sciter & sciter) :
     m_sciter(sciter),
     m_hWnd(nullptr),
@@ -227,10 +245,17 @@ bool SciterWindow::QueryClose() const
 
 bool SciterWindow::Destroy()
 {
+    if (m_hWnd == nullptr || m_destroyed)
+    {
+        return false;
+    }
+    SetDestroyed();
+    PumpPendingDraws();
 #ifdef WIN32
     return PostMessage((HWND)m_hWnd, WM_CLOSE, 0, 0) != 0;
 #else
-    return false;
+    ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, FALSE);
+    return true;
 #endif
 }
 
@@ -449,6 +474,10 @@ void SciterWindow::SetDefaultWindowSize(int x, int y, int width, int height)
 
 LRESULT SciterWindow::HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm)
 {
+    if (pnm == nullptr)
+    {
+        return 0;
+    }
     switch (pnm->code)
     {
     case SC_LOAD_DATA:
@@ -495,7 +524,9 @@ LRESULT SciterWindow::OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld)
 
 LRESULT SciterWindow::OnEngineDestroyed(void)
 {
-    for (WinDestroySinks::const_iterator itr = m_onDestroySink.begin(); itr != m_onDestroySink.end(); itr++)
+    WinDestroySinks sinks = m_onDestroySink;
+    m_onDestroySink.clear();
+    for (WinDestroySinks::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
     {
         (*itr)->OnWindowDestroy(m_hWnd);
     }
