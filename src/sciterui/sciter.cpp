@@ -318,9 +318,13 @@ LRESULT CALLBACK Sciter::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         if (sciter != nullptr)
         {
             SciterWindow * window = sciter->FindSciterWindow(hwnd);
-            if (window != nullptr && !window->QueryClose())
+            if (window != nullptr)
             {
-                return 0;
+                if (!window->QueryClose())
+                {
+                    return 0;
+                }
+                window->SetDestroyed();
             }
         }
         break;

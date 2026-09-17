@@ -298,11 +298,15 @@ void SciterWindow::SetDestroyed(void)
     m_destroyed = true;
     if (m_hParent != nullptr)
     {
+        if (m_hWnd != nullptr)
+        {
+            ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_HIDDEN, 0);
+        }
 #ifdef WIN32
         EnableWindow((HWND)m_hParent, TRUE);
-        SetForegroundWindow((HWND)m_hParent);
-        SetFocus((HWND)m_hParent);
 #endif
+        ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
+        ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_ACTIVATE, TRUE, 0);
     }
     for (EventSinks::iterator itr = m_eventSinks.begin(); itr != m_eventSinks.end(); itr++)
     {
