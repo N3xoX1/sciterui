@@ -96,9 +96,11 @@ private:
     ElemPageMap m_elemPages;
     std::string m_firstPage;
     std::string m_currentPage;
+    static int m_showDepth;
 };
 
 WidgetPageNav::PageNavs WidgetPageNav::m_instances;
+int WidgetPageNav::m_showDepth = 0;
 
 WidgetPageNav::WidgetPageNav(ISciterUI & sciterUI) :
     m_sciterUI(sciterUI),
@@ -203,7 +205,7 @@ void WidgetPageNav::HideCurrentPage(DisplayPage * page)
         page->content.SetStyleAttribute("display", "none");
     }
     m_currentPage.clear();
-    page->elem.SetState(0, SciterElement::STATE_CURRENT | SciterElement::STATE_VISITED, true);
+    page->elem.SetState(0, SciterElement::STATE_CURRENT | SciterElement::STATE_VISITED, false);
 }
 
 void WidgetPageNav::TryToShowPage(SCITER_ELEMENT element)
@@ -233,8 +235,14 @@ void WidgetPageNav::TryToShowPage(SCITER_ELEMENT element)
     {
         return;
     }
+    ++m_showDepth;
     HideCurrentPage(currentPage);
     ShowPage(newPage);
+    --m_showDepth;
+    if (m_showDepth == 0)
+    {
+        m_sciterUI.UpdateWindow(m_pageNavElem.GetElementHwnd(true));
+    }
 }
 
 void WidgetPageNav::ShowPage(DisplayPage * page)
@@ -258,14 +266,14 @@ void WidgetPageNav::ShowPage(DisplayPage * page)
         {
             content.SetHTML((const uint8_t*)page->pageContents.c_str(), page->pageContents.length(), SciterElement::SIH_REPLACE_CONTENT);
         }
-        m_sciterUI.UpdateWindow(m_pageNavElem.GetElementHwnd(true));
+        content.Update(false);
         for (IPagesSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
         {
             (*itr)->PageNavCreatedPage(page->pageName, page->content);
         }
     }
     m_currentPage = page->pageName;
-    page->elem.SetState(SciterElement::STATE_CURRENT | SciterElement::STATE_VISITED, 0, true);
+    page->elem.SetState(SciterElement::STATE_CURRENT | SciterElement::STATE_VISITED, 0, false);
     for (IPagesSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
     {
         (*itr)->PageNavPageChanged(page->pageName, m_pageNavElem);
