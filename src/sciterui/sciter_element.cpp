@@ -5,33 +5,33 @@
 #include <sciter-x.h>
 #include "sciter_hwindow.h"
 
-namespace 
+namespace
 {
-    struct FindAllCallback : sciter::dom::callback
-    {
-        SciterElements elements;
-                
-        bool on_element(HELEMENT hfe)
-        {
-            elements.push_back(hfe);
-            return false;
-        }
-    };
+struct FindAllCallback : sciter::dom::callback
+{
+    SciterElements elements;
 
-    struct FindFirstCallback : sciter::dom::callback
+    bool on_element(HELEMENT hfe)
     {
-        HELEMENT hfound;
-        FindFirstCallback() :
-            hfound(0)
-        {
-        }
-        inline bool on_element(HELEMENT hfe)
-        {
-            hfound = hfe;
-            return true; /*stop enumeration*/
-        }
-    };
-}
+        elements.push_back(hfe);
+        return false;
+    }
+};
+
+struct FindFirstCallback : sciter::dom::callback
+{
+    HELEMENT hfound;
+    FindFirstCallback() :
+        hfound(0)
+    {
+    }
+    inline bool on_element(HELEMENT hfe)
+    {
+        hfound = hfe;
+        return true; /*stop enumeration*/
+    }
+};
+} // namespace
 
 static SBOOL SC_CALLBACK callback_func(HELEMENT he, LPVOID param)
 {
@@ -160,13 +160,14 @@ void SciterElement::RemoveClassName(const char * value) const
 void SciterElement::Clear()
 {
     SCDOM_RESULT r = SciterSetElementText((HELEMENT)m_he, 0, 0);
-    assert(r == SCDOM_OK); (void)r;
+    assert(r == SCDOM_OK);
+    (void)r;
 }
 
-bool SciterElement::Create(const char * tagName, const char* text)
+bool SciterElement::Create(const char * tagName, const char * text)
 {
     SciterElement e;
-    SCDOM_RESULT r = SciterCreateElement(tagName, SciterUI::stdstr(text).ToUTF16().c_str(), (HELEMENT*)&e.m_he); // don't need 'use' here, as it is already "addrefed"
+    SCDOM_RESULT r = SciterCreateElement(tagName, SciterUI::stdstr(text).ToUTF16().c_str(), (HELEMENT *)&e.m_he); // don't need 'use' here, as it is already "addrefed"
     if (r != SCDOM_OK)
     {
         assert(r == SCDOM_OK);
@@ -185,10 +186,10 @@ void SciterElement::Detach() const
 
 void SciterElement::Destroy()
 {
-    HELEMENT t = (HELEMENT)m_he; 
+    HELEMENT t = (HELEMENT)m_he;
     m_he = 0;
     SCDOM_RESULT r = SciterDeleteElement(t);
-    assert(r == SCDOM_OK); 
+    assert(r == SCDOM_OK);
     (void)r;
 }
 
@@ -236,24 +237,24 @@ void SciterElement::SetAttribute(const char * name, const char * value) const
     (void)r;
 }
 
-void SciterElement::RemoveAttribute(const char* name) const
+void SciterElement::RemoveAttribute(const char * name) const
 {
     SciterSetAttributeByName((HELEMENT)m_he, name, 0);
 }
 
-HWINDOW SciterElement::GetElementHwnd(bool RootWindow) const
+HWINDOW SciterElement::GetElementHwnd(bool rootWindow) const
 {
     HWINDOW hwnd = 0;
-    SCDOM_RESULT r = SciterGetElementHwnd((HELEMENT)m_he, (SciterUI::SciterHWINDOW *)&hwnd, RootWindow);
+    SCDOM_RESULT r = SciterGetElementHwnd((HELEMENT)m_he, (SciterUI::SciterHWINDOW *)&hwnd, rootWindow);
     assert(r == SCDOM_OK);
     (void)r;
     return hwnd;
 }
 
-std::string SciterElement::GetAttributeByName(const char* Name) const
+std::string SciterElement::GetAttributeByName(const char * name) const
 {
     sciter::string s;
-    SCDOM_RESULT r = SciterGetAttributeByNameCB((HELEMENT)m_he, Name, &_LPCWSTR2STRING, &s);
+    SCDOM_RESULT r = SciterGetAttributeByNameCB((HELEMENT)m_he, name, &_LPCWSTR2STRING, &s);
     if (r == SCDOM_OK_NOT_HANDLED)
     {
         return "";
@@ -261,10 +262,10 @@ std::string SciterElement::GetAttributeByName(const char* Name) const
     return SciterUI::stdstr().FromUTF16(s.c_str());
 }
 
-SCITER_ELEMENT SciterElement::GetChild(uint32_t Index) const
+SCITER_ELEMENT SciterElement::GetChild(uint32_t index) const
 {
     HELEMENT Child = 0;
-    SciterGetNthChild((HELEMENT)m_he, Index, &Child);
+    SciterGetNthChild((HELEMENT)m_he, index, &Child);
     return (SCITER_ELEMENT)Child;
 }
 
@@ -284,10 +285,10 @@ SciterElement SciterElement::GetElementByID(const char * id) const
     return FindFirst("[id='%s']", id);
 }
 
-std::string SciterElement::GetHTML(bool OuterHtml) const
+std::string SciterElement::GetHTML(bool outerHtml) const
 {
     sciter::astring s;
-    SCDOM_RESULT r = SciterGetElementHtmlCB((HELEMENT)m_he, SBOOL(OuterHtml), &_LPCBYTE2ASTRING, &s);
+    SCDOM_RESULT r = SciterGetElementHtmlCB((HELEMENT)m_he, SBOOL(outerHtml), &_LPCBYTE2ASTRING, &s);
     assert(r == SCDOM_OK);
     (void)r;
     return s;
@@ -323,23 +324,24 @@ SciterValue SciterElement::GetValue() const
 {
     SCITER_VALUE rv;
     SCDOM_RESULT r = SciterGetValue((HELEMENT)m_he, &rv);
-    assert(r == SCDOM_OK); (void)r;
+    assert(r == SCDOM_OK);
+    (void)r;
     return ConvertToSciterValue(rv);
 }
 
 void SciterElement::HidePopup() const
 {
-    UINT State = 0;
-    SCDOM_RESULT r = SciterGetElementState((HELEMENT)m_he, &State);
-    if (r == SCDOM_OK && ((State & STATE_POPUP) == STATE_POPUP))
+    UINT state = 0;
+    SCDOM_RESULT r = SciterGetElementState((HELEMENT)m_he, &state);
+    if (r == SCDOM_OK && ((state & STATE_POPUP) == STATE_POPUP))
     {
         SciterHidePopup((HELEMENT)m_he);
     }
 }
 
-void SciterElement::Insert(const SCITER_ELEMENT& e, uint32_t Index)
+void SciterElement::Insert(const SCITER_ELEMENT & e, uint32_t index)
 {
-    SCDOM_RESULT r = SciterInsertElement((HELEMENT)e, (HELEMENT)m_he, Index);
+    SCDOM_RESULT r = SciterInsertElement((HELEMENT)e, (HELEMENT)m_he, index);
     assert(r == SCDOM_OK);
     (void)r;
 }
@@ -352,14 +354,16 @@ bool SciterElement::ReleaseCapture(void) const
 void SciterElement::PostEvent(uint32_t event_code, uint64_t reason, SCITER_ELEMENT heSource) const
 {
     SCDOM_RESULT r = SciterPostEvent((HELEMENT)m_he, event_code, heSource ? (HELEMENT)heSource : (HELEMENT)m_he, reason);
-    assert(r == SCDOM_OK); (void)r;
+    assert(r == SCDOM_OK);
+    (void)r;
 }
 
 bool SciterElement::SendEvent(uint32_t event_code, uint64_t reason, SCITER_ELEMENT heSource) const
 {
     SBOOL handled = FALSE;
     SCDOM_RESULT r = SciterSendEvent((HELEMENT)m_he, event_code, heSource ? (HELEMENT)heSource : (HELEMENT)m_he, reason, &handled);
-    assert(r == SCDOM_OK); (void)r;
+    assert(r == SCDOM_OK);
+    (void)r;
     return handled != FALSE;
 }
 
@@ -389,23 +393,23 @@ void SciterElement::SetHTML(const uint8_t * html, size_t htmlLength, int where) 
     }
 }
 
-SciterElement::RECT SciterElement::GetLocation(uint32_t Area) const
+SciterElement::RECT SciterElement::GetLocation(uint32_t area) const
 {
     SciterElement::RECT rc = {0, 0, 0, 0};
-    SciterGetElementLocation((HELEMENT)m_he, (::RECT *)&rc, Area);
+    SciterGetElementLocation((HELEMENT)m_he, (::RECT *)&rc, area);
     return rc;
 }
 
-void SciterElement::SetState(uint32_t BitsToSet, uint32_t BitsToClear, bool Update) const
+void SciterElement::SetState(uint32_t bitsToSet, uint32_t bitsToClear, bool updateView) const
 {
-    SCDOM_RESULT r = SciterSetElementState((HELEMENT)m_he, BitsToSet, BitsToClear, SBOOL(Update));
+    SCDOM_RESULT r = SciterSetElementState((HELEMENT)m_he, bitsToSet, bitsToClear, SBOOL(updateView));
     assert(r == SCDOM_OK);
     (void)r;
 }
 
-void SciterElement::SetStyleAttribute(const char* Name, const char * Value) const
+void SciterElement::SetStyleAttribute(const char * name, const char * value) const
 {
-    SCDOM_RESULT r = SciterSetStyleAttribute((HELEMENT)m_he, Name, SciterUI::stdstr(Value).ToUTF16().c_str());
+    SCDOM_RESULT r = SciterSetStyleAttribute((HELEMENT)m_he, name, SciterUI::stdstr(value).ToUTF16().c_str());
     assert(r == SCDOM_OK);
     (void)r;
 }
@@ -413,15 +417,16 @@ void SciterElement::SetStyleAttribute(const char* Name, const char * Value) cons
 void SciterElement::SetText(const char * text) const
 {
     assert(text);
-    if (text) 
+    if (text)
     {
         sui_ustring wtext = SciterUI::stdstr(text).ToUTF16();
         SCDOM_RESULT r = SciterSetElementText((HELEMENT)m_he, wtext.c_str(), UINT(wtext.size()));
-        assert(r == SCDOM_OK); (void)r;
+        assert(r == SCDOM_OK);
+        (void)r;
     }
 }
 
-void SciterElement::SetTimer(uint32_t milliseconds, uint32_t* timer_id) const
+void SciterElement::SetTimer(uint32_t milliseconds, uint32_t * timer_id) const
 {
     SCDOM_RESULT r = SciterSetTimer((HELEMENT)m_he, milliseconds, (UINT_PTR)timer_id);
     assert(r == SCDOM_OK);
@@ -432,12 +437,13 @@ void SciterElement::SetValue(SciterValue value) const
 {
     SCITER_VALUE rv = ConvertFromSciterValue(value);
     SCDOM_RESULT r = SciterSetValue((HELEMENT)m_he, &rv);
-    assert(r == SCDOM_OK); (void)r;
+    assert(r == SCDOM_OK);
+    (void)r;
 }
 
 /**Apply changes and refresh element area in its window.
-  * \param[in] render_now \b bool, if true element will be redrawn immediately.
-  **/
+ * \param[in] render_now \b bool, if true element will be redrawn immediately.
+ **/
 void SciterElement::Update(bool renderNow) const
 {
     SciterUpdateElement((HELEMENT)m_he, (SBOOL)renderNow);
