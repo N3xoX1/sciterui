@@ -92,7 +92,23 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
         SciterSetOption((SciterHWINDOW)m_hWnd, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
 
         m_sciter.WindowCreated(this);
-        LoadHtml(htmlFile);
+        if (!LoadHtml(htmlFile))
+        {
+            m_sciter.WindowDestroyed(this);
+#ifndef WIN32
+            PumpPendingDraws();
+#endif
+            if (m_hWnd != nullptr)
+            {
+#ifdef WIN32
+                DestroyWindow((HWND)m_hWnd);
+#else
+                ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, FALSE);
+#endif
+                m_hWnd = nullptr;
+            }
+            return false;
+        }
         SetDefaultWindowSize(x, y, width, height);
         if (!startHidden)
         {
