@@ -141,6 +141,7 @@ private:
     WinCloseSinks m_onCloseSink;
     bool m_bound;
     bool m_destroyed;
+    bool m_parentEnabled;
 };
 
 } // namespace SciterUI
