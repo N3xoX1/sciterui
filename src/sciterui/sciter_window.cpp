@@ -38,6 +38,7 @@ SciterWindow::SciterWindow(Sciter & sciter) :
     m_hWnd(nullptr),
     m_hParent(nullptr),
     m_createParent(nullptr),
+    m_parentState(0),
     m_layoutWidth(0),
     m_layoutHeight(0),
     m_bound(false),
@@ -81,6 +82,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
         if (childWindow)
         {
             m_hParent = parentWinow;
+            m_parentState = (int)::SciterWindowExec((SciterHWINDOW)parentWinow, SCITER_WINDOW_GET_STATE, 0, 0);
 #ifdef WIN32
             EnableWindow((HWND)parentWinow, FALSE);
 #endif
@@ -309,8 +311,13 @@ void SciterWindow::SetDestroyed(void)
 #ifdef WIN32
         EnableWindow((HWND)m_hParent, TRUE);
 #endif
-        ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
-        ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_ACTIVATE, TRUE, 0);
+        if (m_parentState == SCITER_WINDOW_STATE_SHOWN ||
+            m_parentState == SCITER_WINDOW_STATE_MAXIMIZED ||
+            m_parentState == SCITER_WINDOW_STATE_FULL_SCREEN)
+        {
+            ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_SET_STATE, (UINT_PTR)m_parentState, 0);
+            ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_ACTIVATE, TRUE, 0);
+        }
     }
     for (EventSinks::iterator itr = m_eventSinks.begin(); itr != m_eventSinks.end(); itr++)
     {

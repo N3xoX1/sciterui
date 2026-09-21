@@ -133,6 +133,7 @@ private:
     HWINDOW m_hWnd;
     HWINDOW m_hParent;
     HWINDOW m_createParent;
+    int m_parentState;
     int m_layoutWidth;
     int m_layoutHeight;
     EventSinks m_eventSinks;
