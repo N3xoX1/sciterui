@@ -249,11 +249,15 @@ bool SciterWindow::Destroy()
     {
         return false;
     }
-    SetDestroyed();
-    PumpPendingDraws();
 #ifdef WIN32
     return PostMessage((HWND)m_hWnd, WM_CLOSE, 0, 0) != 0;
 #else
+    if (!QueryClose())
+    {
+        return false;
+    }
+    SetDestroyed();
+    PumpPendingDraws();
     ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, FALSE);
     return true;
 #endif
