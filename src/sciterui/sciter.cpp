@@ -366,7 +366,7 @@ int Sciter::AttachWidgetProc(WidgetCallbackInfo * info, SCITER_ELEMENT he, uint3
             return 0;
         }
         int windgetId = std::stoi(widgetValue, nullptr, 10);
-        IWidgetMap::const_iterator IWidgetIter = info->widgets.find(windgetId);
+        IWidgetMap::iterator IWidgetIter = info->widgets.find(windgetId);
         if (IWidgetIter == info->widgets.end())
         {
             return 0;
@@ -375,22 +375,22 @@ int Sciter::AttachWidgetProc(WidgetCallbackInfo * info, SCITER_ELEMENT he, uint3
         INITIALIZATION_PARAMS * p = (INITIALIZATION_PARAMS *)prms;
         if (p->cmd == BEHAVIOR_DETACH)
         {
+            IWidget * widget = IWidgetIter->second;
             ElementMap::iterator itr = m_elementBases.find(windgetId);
             if (itr != m_elementBases.end())
             {
                 std::shared_ptr<BaseElement> elementBase = itr->second;
                 if (elementBase != nullptr)
                 {
-                    IWidget * widget = IWidgetIter->second;
                     widget->Detached(he);
                     elementBase->RemoveWidget(widget);
-                    
-                    if (info->releaseWidget != nullptr)
-                    {
-                        info->releaseWidget(widget);
-                    }
                 }
                 m_elementBases.erase(itr);
+            }
+            info->widgets.erase(IWidgetIter);
+            if (info->releaseWidget != nullptr)
+            {
+                info->releaseWidget(widget);
             }
         }
         else if (p->cmd == BEHAVIOR_ATTACH)
