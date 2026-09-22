@@ -33,7 +33,7 @@ SciterValue ConvertToSciterValue(const sciter::value & rv)
         {
             if (l == 0)
             {
-                return SciterValue();
+                return SciterValue(std::string());
             }
             return SciterValue(SciterUI::stdstr().FromUTF16(c));
         }
