@@ -153,9 +153,21 @@ void WidgetPageNav::Detached(SCITER_ELEMENT /*Element*/)
         DisplayPage * page = CurrentPageItr->second.get();
         page->content = nullptr;
     }
+    for (NavPages::const_iterator itr = m_pages.begin(); itr != m_pages.end(); itr++)
+    {
+        DisplayPage * page = itr->second.get();
+        if (page != nullptr && page->elem.IsValid())
+        {
+            m_sciterUI.DetachHandler(page->elem, IID_ICLICKSINK, (IClickSink *)this);
+        }
+    }
     m_baseElement = nullptr;
+    m_pageNavElem = nullptr;
+    m_targetFrame = nullptr;
     m_elemPages.clear();
     m_pages.clear();
+    m_firstPage.clear();
+    m_currentPage.clear();
 }
 
 std::shared_ptr<void> WidgetPageNav::GetInterface(const char * riid)
