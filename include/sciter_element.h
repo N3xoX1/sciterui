@@ -130,6 +130,7 @@ public:
     SciterElement GetParent() const;
     SciterElement GetRoot() const;
     uint32_t GetState() const;
+    uint32_t GetUID() const;
     SciterValue GetValue() const;
     void HidePopup() const;
     void Insert(const SCITER_ELEMENT & e, uint32_t Index);

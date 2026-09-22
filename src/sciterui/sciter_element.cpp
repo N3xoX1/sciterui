@@ -320,6 +320,16 @@ uint32_t SciterElement::GetState() const
     return state; /*ELEMENT_STATE_BITS*/
 }
 
+uint32_t SciterElement::GetUID() const
+{
+    UINT uid = 0;
+    if (SciterGetElementUID((HELEMENT)m_he, &uid) != SCDOM_OK)
+    {
+        return 0;
+    }
+    return uid;
+}
+
 SciterValue SciterElement::GetValue() const
 {
     SCITER_VALUE rv;

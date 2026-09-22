@@ -47,7 +47,7 @@ class WidgetPageNav :
         DisplayPage& operator=(const DisplayPage &) = delete;
     };
     typedef std::map<std::string, std::unique_ptr<DisplayPage>, InsensitiveCompare> NavPages;
-    typedef std::map<SCITER_ELEMENT, DisplayPage *> ElemPageMap;
+    typedef std::map<uint32_t, DisplayPage *> ElemPageMap;
     typedef std::map<IWidget *, std::shared_ptr<WidgetPageNav>> PageNavs;
     typedef std::set<IPagesSink *> IPagesSinkSet;
 
@@ -222,12 +222,12 @@ void WidgetPageNav::HideCurrentPage(DisplayPage * page)
 
 void WidgetPageNav::TryToShowPage(SCITER_ELEMENT element)
 {
-    std::string pageId = SciterElement(element).GetAttribute("data-page_id");
-    if (!pageId.empty())
+    const uint32_t elementUid = SciterElement(element).GetUID();
+    if (elementUid == 0)
     {
-        element = (SCITER_ELEMENT)std::stoull(pageId.c_str(), nullptr, 16);
+        return;
     }
-    ElemPageMap::iterator iter = m_elemPages.find(element);
+    ElemPageMap::iterator iter = m_elemPages.find(elementUid);
     if (iter == m_elemPages.end())
     {
         return;
@@ -299,6 +299,11 @@ bool WidgetPageNav::OnSciterElement(SCITER_ELEMENT element)
     {
         return false;
     }
+    const uint32_t elementUid = Page->elem.GetUID();
+    if (elementUid == 0)
+    {
+        return false;
+    }
     Page->pageName = Page->elem.GetAttributeByName("name");
     if (Page->pageName.length() == 0)
     {
@@ -313,12 +318,11 @@ bool WidgetPageNav::OnSciterElement(SCITER_ELEMENT element)
         Page->pageContents = Page->elem.GetHTML(false);
     }
     Page->elem.SetHTML((const uint8_t *)Page->pageLabel.c_str(), (int)Page->pageLabel.length(), SciterElement::SIH_REPLACE_CONTENT);
-    Page->elem.SetAttribute("data-page_id", stdstr_f("%llx", (SCITER_ELEMENT)Page->elem).c_str());
-    m_sciterUI.AttachHandler(Page->elem, IID_ICLICKSINK, (IClickSink *)this);
     std::pair<NavPages::iterator, bool> Item = m_pages.insert(NavPages::value_type(Page->pageName, std::move(Page)));
     if (Item.second)
     {
-        m_elemPages.insert(ElemPageMap::value_type(element, Item.first->second.get()));
+        m_sciterUI.AttachHandler(Item.first->second->elem, IID_ICLICKSINK, (IClickSink *)this);
+        m_elemPages.insert(ElemPageMap::value_type(elementUid, Item.first->second.get()));
         if (m_firstPage.empty())
         {
             m_firstPage = Item.first->second->pageName;
