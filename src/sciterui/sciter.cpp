@@ -97,6 +97,16 @@ void Sciter::WindowDestroyed(SciterWindow * window)
         }
         m_windows.erase(itr);
     }
+
+    for (WindowList::iterator createdItr = m_CreatedWindows.begin(); createdItr != m_CreatedWindows.end(); createdItr++)
+    {
+        if (createdItr->get() != window)
+        {
+            continue;
+        }
+        m_CreatedWindows.erase(createdItr);
+        break;
+    }
 }
 
 SciterWindow * Sciter::FindSciterWindow(HWINDOW hwnd) const
