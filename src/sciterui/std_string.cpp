@@ -175,7 +175,7 @@ stdstr & stdstr::Replace(const char search, const char replace)
     std::string::size_type pos = str.find(search);
     while (pos != std::string::npos)
     {
-        str.replace(pos, 1, &replace);
+        str.replace(pos, 1, 1, replace);
         pos = str.find(search, pos + 1);
     }
     return *this;
@@ -183,12 +183,16 @@ stdstr & stdstr::Replace(const char search, const char replace)
 
 stdstr & stdstr::Replace(const char * search, const char replace)
 {
+    if (search == nullptr || search[0] == '\0')
+    {
+        return *this;
+    }
     std::string & str = *this;
     std::string::size_type pos = str.find(search);
     size_t SearchSize = strlen(search);
     while (pos != std::string::npos)
     {
-        str.replace(pos, SearchSize, &replace);
+        str.replace(pos, SearchSize, 1, replace);
         pos = str.find(search, pos + 1);
     }
     return *this;
@@ -196,6 +200,10 @@ stdstr & stdstr::Replace(const char * search, const char replace)
 
 stdstr & stdstr::Replace(const std::string & search, const std::string & replace)
 {
+    if (search.empty())
+    {
+        return *this;
+    }
     std::string & str = *this;
     std::string::size_type pos = str.find(search);
     size_t SearchSize = search.size();
