@@ -68,13 +68,6 @@ public:
     SciterWindow(Sciter & sciter);
     ~SciterWindow();
 
-    void Show();
-    bool Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags);
-    bool GetDestroyed(void) const;
-    void SetDestroyed(void);
-    bool AttachHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr);
-    bool DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr);
-
     //ISciterWindow
     void CenterWindow() override;
     void FixMinSize() override;
@@ -117,6 +110,11 @@ private:
     };
     typedef std::vector<RegisteredSink> EventSinks;
 
+    void Show();
+    bool Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags);
+    void SetDestroyed(void);
+    bool AttachHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr);
+    bool DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr);
     void Bind();
     bool LoadHtml(const char * url);
     bool GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventProc, uint32_t & subscription);

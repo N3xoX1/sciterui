@@ -91,10 +91,6 @@ void Sciter::WindowDestroyed(SciterWindow * window)
     WindowSet::iterator itr = m_windows.find(window);
     if (itr != m_windows.end())
     {
-        if (!window->GetDestroyed())
-        {
-            window->SetDestroyed();
-        }
         m_windows.erase(itr);
     }
 
