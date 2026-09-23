@@ -94,6 +94,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
         m_sciter.WindowCreated(this);
         if (!LoadHtml(htmlFile))
         {
+            SetDestroyed();
             m_sciter.WindowDestroyed(this);
 #ifndef WIN32
             PumpPendingDraws();
@@ -304,11 +305,6 @@ void SciterWindow::RunModal()
 }
 
 bool SciterWindow::IsClosed() const
-{
-    return m_destroyed;
-}
-
-bool SciterWindow::GetDestroyed(void) const
 {
     return m_destroyed;
 }
@@ -558,6 +554,19 @@ LRESULT SciterWindow::OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld)
 
 LRESULT SciterWindow::OnEngineDestroyed(void)
 {
+    if (!m_destroyed)
+    {
+        m_destroyed = true;
+#ifdef WIN32
+        if (m_hParent != nullptr)
+        {
+            EnableWindow((HWND)m_hParent, m_parentEnabled ? TRUE : FALSE);
+        }
+#endif
+    }
+    m_eventSinks.clear();
+    m_onCloseSink.clear();
+
     WinDestroySinks sinks = m_onDestroySink;
     m_onDestroySink.clear();
     for (WinDestroySinks::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
