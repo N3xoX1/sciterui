@@ -122,44 +122,44 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
 void SciterWindow::CenterWindow(void)
 {
 #ifdef WIN32
-    int32_t xScreen = GetSystemMetrics(SM_CXSCREEN), x;
-    int32_t yScreen = GetSystemMetrics(SM_CYSCREEN), y;
-    RECT rc;
-    if (!GetWindowRect((HWND)m_hWnd, &rc))
+    const HWND hwnd = (HWND)m_hWnd;
+    RECT windowRect{};
+    if (!GetWindowRect(hwnd, &windowRect))
     {
         return;
     }
-    HWND parent = GetParent((HWND)m_hWnd);
-    RECT parentRect;
-    if (parent != nullptr && !::IsIconic(parent) && ::IsWindowVisible(parent) && GetWindowRect(parent, &parentRect))
+
+    const HWND parent = GetParent(hwnd);
+    const HWND monitorWindow = parent != nullptr && IsWindow(parent) ? parent : hwnd;
+    const HMONITOR monitor = MonitorFromWindow(monitorWindow, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO monitorInfo{sizeof(MONITORINFO)};
+    if (monitor == nullptr || !GetMonitorInfoW(monitor, &monitorInfo))
     {
-        int32_t width = rc.right - rc.left;
-        int32_t height = rc.bottom - rc.top;
+        return;
+    }
+
+    const RECT & workArea = monitorInfo.rcWork;
+    const int32_t width = windowRect.right - windowRect.left;
+    const int32_t height = windowRect.bottom - windowRect.top;
+    int32_t x;
+    int32_t y;
+
+    RECT parentRect{};
+    if (parent != nullptr && !IsIconic(parent) && IsWindowVisible(parent) && GetWindowRect(parent, &parentRect))
+    {
         x = ((parentRect.right - parentRect.left) - (width)) / 2 + parentRect.left;
         y = ((parentRect.bottom - parentRect.top) - (height)) / 2 + parentRect.top;
-        if (x < 0 && width < xScreen)
-        {
-            x = 0;
-        }
-        if (y < 0 && height < yScreen)
-        {
-            y = 0;
-        }
-        if (x + width > xScreen)
-        {
-            x = xScreen - width;
-        }
-        if (y + height > yScreen)
-        {
-            y = yScreen - height;
-        }
     }
     else
     {
-        x = (xScreen - (rc.right - rc.left)) / 2;
-        y = (yScreen - (rc.bottom - rc.top)) / 2;
+        x = workArea.left + ((workArea.right - workArea.left) - width) / 2;
+        y = workArea.top + ((workArea.bottom - workArea.top) - height) / 2;
     }
-    SetWindowPos((HWND)m_hWnd, 0, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);
+
+    x = width >= workArea.right - workArea.left ? workArea.left : std::max<int32_t>(workArea.left, std::min<int32_t>(x, workArea.right - width));
+    y = height >= workArea.bottom - workArea.top ? workArea.top : std::max<int32_t>(workArea.top, std::min<int32_t>(y, workArea.bottom - height));
+
+    SetWindowPos(hwnd, nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);
 #endif
 }
 
