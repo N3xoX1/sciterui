@@ -811,8 +811,13 @@ void WidgetMenuBar::ShowSubMenu(SciterElement item)
 
 void WidgetMenuBar::NotifySinksMenuItem(int32_t id, SCITER_ELEMENT item) const
 {
-    for (IMenuBarSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
+    const IMenuBarSinkSet sinks = m_sinks;
+    for (IMenuBarSinkSet::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
     {
+        if (m_sinks.find(*itr) == m_sinks.end())
+        {
+            continue;
+        }
         (*itr)->OnMenuItem(id, item);
     }
 }
