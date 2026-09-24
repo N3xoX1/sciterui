@@ -64,6 +64,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
 
     bool childWindow = parentWinow != nullptr && (flags & SUIW_CHILD) != 0;
     bool startHidden = (flags & SUIW_HIDDEN) != 0;
+    flags &= ~((uint32_t)SUIW_HIDDEN);
 
 #ifdef WIN32
     DWORD exStyle = childWindow ? (WS_EX_DLGMODALFRAME | WS_EX_TOOLWINDOW) : WS_EX_APPWINDOW;
