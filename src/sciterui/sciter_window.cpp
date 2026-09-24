@@ -254,8 +254,13 @@ void SciterWindow::OnCloseSinkRemove(IWindowCloseSink * Sink)
 
 bool SciterWindow::QueryClose() const
 {
-    for (WinCloseSinks::const_iterator itr = m_onCloseSink.begin(); itr != m_onCloseSink.end(); itr++)
+    const WinCloseSinks sinks = m_onCloseSink;
+    for (WinCloseSinks::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
     {
+        if (m_onCloseSink.find(*itr) == m_onCloseSink.end())
+        {
+            continue;
+        }
         if (!(*itr)->OnWindowCloseRequest(m_hWnd))
         {
             return false;
@@ -568,11 +573,15 @@ LRESULT SciterWindow::OnEngineDestroyed(void)
     m_onCloseSink.clear();
 
     WinDestroySinks sinks = m_onDestroySink;
-    m_onDestroySink.clear();
     for (WinDestroySinks::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
     {
+        if (m_onDestroySink.find(*itr) == m_onDestroySink.end())
+        {
+            continue;
+        }
         (*itr)->OnWindowDestroy(m_hWnd);
     }
+    m_onDestroySink.clear();
     m_sciter.WindowDestroyed(this);
     return 0;
 }

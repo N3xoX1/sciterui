@@ -186,18 +186,27 @@ bool WidgetPageNav::ShouldChangePage(DisplayPage * newPage, DisplayPage * curren
         return false;
     }
 
+    const IPagesSinkSet sinks = m_sinks;
     if (currentPage)
     {
-        for (IPagesSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
+        for (IPagesSinkSet::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
         {
+            if (m_sinks.find(*itr) == m_sinks.end())
+            {
+                continue;
+            }
             if (!(*itr)->PageNavChangeFrom(currentPage->pageName, m_pageNavElem))
             {
                 return false;
             }
         }
     }
-    for (IPagesSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
+    for (IPagesSinkSet::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
     {
+        if (m_sinks.find(*itr) == m_sinks.end())
+        {
+            continue;
+        }
         if (!(*itr)->PageNavChangeTo(newPage->pageName, m_pageNavElem))
         {
             return false;
@@ -259,6 +268,7 @@ void WidgetPageNav::TryToShowPage(SCITER_ELEMENT element)
 
 void WidgetPageNav::ShowPage(DisplayPage * page)
 {
+    const IPagesSinkSet sinks = m_sinks;
     if (page->content.IsValid())
     {
         page->content.SetStyleAttribute("display", "block");
@@ -279,15 +289,23 @@ void WidgetPageNav::ShowPage(DisplayPage * page)
             content.SetHTML((const uint8_t*)page->pageContents.c_str(), page->pageContents.length(), SciterElement::SIH_REPLACE_CONTENT);
         }
         content.Update(false);
-        for (IPagesSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
+        for (IPagesSinkSet::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
         {
+            if (m_sinks.find(*itr) == m_sinks.end())
+            {
+                continue;
+            }
             (*itr)->PageNavCreatedPage(page->pageName, page->content);
         }
     }
     m_currentPage = page->pageName;
     page->elem.SetState(SciterElement::STATE_CURRENT | SciterElement::STATE_VISITED, 0, false);
-    for (IPagesSinkSet::iterator itr = m_sinks.begin(); itr != m_sinks.end(); itr++)
+    for (IPagesSinkSet::const_iterator itr = sinks.begin(); itr != sinks.end(); itr++)
     {
+        if (m_sinks.find(*itr) == m_sinks.end())
+        {
+            continue;
+        }
         (*itr)->PageNavPageChanged(page->pageName, m_pageNavElem);
     }
 }
