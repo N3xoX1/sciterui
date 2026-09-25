@@ -94,10 +94,14 @@ private:
     SciterElement m_openTopMenu;
     SciterElement m_openSubItem;
     SciterElement m_openSubMenu;
+    SciterElement m_hoverTopItem;
+    uint32_t m_hoverX;
+    uint32_t m_hoverY;
     IMenuBarSinkSet m_sinks;
     bool m_leftAltDown;
     bool m_rightAltDown;
     bool m_menuActive;
+    bool m_suppressPopupDismiss;
 };
 
 WidgetMenuBar::MenuBars WidgetMenuBar::m_instances;
@@ -109,49 +113,17 @@ static const uint32_t kMenuItemClickEvent = (uint32_t)MENU_ITEM_CLICK;
 static const uint32_t kPopupDismissedEvent = (uint32_t)POPUP_DISMISSED;
 static const uint64_t kClickReasonByKey = (uint64_t)BY_KEY_CLICK;
 
-enum class InWindowMenuPlacement
+enum class MenuPlacement
 {
     BelowAnchor,
     RightOfAnchor,
 };
 
 #ifndef _WIN32
-static void SizeInWindowMenuToContent(SciterElement menu)
+static bool IsWaylandSession()
 {
-    menu.Update(true);
-
-    const SciterElement::RECT contentBox = menu.GetLocation(SciterElement::ROOT_RELATIVE | SciterElement::CONTENT_BOX);
-    int32_t maxBottom = contentBox.top;
-    int32_t maxRight = contentBox.left;
-    const uint32_t childCount = menu.GetChildCount();
-    for (uint32_t i = 0; i < childCount; ++i)
-    {
-        SciterElement child(menu.GetChild(i));
-        if (!child.IsValid())
-        {
-            continue;
-        }
-        const SciterElement::RECT childBox = child.GetLocation(SciterElement::ROOT_RELATIVE | SciterElement::MARGIN_BOX);
-        if (childBox.bottom > maxBottom)
-        {
-            maxBottom = childBox.bottom;
-        }
-        if (childBox.right > maxRight)
-        {
-            maxRight = childBox.right;
-        }
-    }
-
-    const int32_t contentHeight = maxBottom - contentBox.top;
-    const int32_t contentWidth = maxRight - contentBox.left;
-    if (contentHeight > 0)
-    {
-        menu.SetStyleAttribute("height", SciterUI::stdstr_f("%dpx", contentHeight).c_str());
-    }
-    if (contentWidth > 0)
-    {
-        menu.SetStyleAttribute("min-width", SciterUI::stdstr_f("%dpx", contentWidth).c_str());
-    }
+    const char * display = getenv("WAYLAND_DISPLAY");
+    return display != nullptr && display[0] != '\0';
 }
 #endif
 
@@ -162,14 +134,66 @@ static void HideMenu(SciterElement menu)
         return;
     }
     menu.RemoveClassName("menu-open");
-#ifdef _WIN32
     menu.HidePopup();
-#else
-    menu.SetStyleAttribute("display", "none");
-#endif
 }
 
-static void ShowMenu(ISciterUI & sciterUI, SciterElement menu, SciterElement anchor, InWindowMenuPlacement placement)
+static bool RectContains(const SciterElement::RECT & rc, int x, int y)
+{
+    return rc.right > rc.left && rc.bottom > rc.top && x >= rc.left && y >= rc.top && x < rc.right && y < rc.bottom;
+}
+
+static SciterElement::RECT ViewBox(const SciterElement & element)
+{
+    return element.GetLocation(SciterElement::VIEW_RELATIVE | SciterElement::BORDER_BOX);
+}
+
+static SciterElement MenuItemAtPoint(const SciterElement & menu, int x, int y)
+{
+    if (!menu.IsValid())
+    {
+        return SciterElement();
+    }
+    for (uint32_t i = 0, n = menu.GetChildCount(); i < n; ++i)
+    {
+        SciterElement child(menu.GetChild(i));
+        if (!child.IsValid())
+        {
+            continue;
+        }
+        if (RectContains(ViewBox(child), x, y))
+        {
+            return child;
+        }
+    }
+    return SciterElement();
+}
+
+static void HighlightOnly(SciterElement item)
+{
+    SciterElement parent = item.GetParent();
+    if (!parent.IsValid())
+    {
+        return;
+    }
+    for (uint32_t i = 0, n = parent.GetChildCount(); i < n; ++i)
+    {
+        SciterElement child(parent.GetChild(i));
+        if (!child.IsValid())
+        {
+            continue;
+        }
+        if (child == item)
+        {
+            child.SetState(SciterElement::STATE_CURRENT, 0, true);
+        }
+        else
+        {
+            child.SetState(0, SciterElement::STATE_CURRENT | SciterElement::STATE_OWNS_POPUP, true);
+        }
+    }
+}
+
+static void ShowMenu(ISciterUI & sciterUI, SciterElement menu, SciterElement anchor, MenuPlacement placement)
 {
     if (!menu.IsValid())
     {
@@ -177,27 +201,22 @@ static void ShowMenu(ISciterUI & sciterUI, SciterElement menu, SciterElement anc
     }
 
     menu.SetStyleAttribute("popup-animation", "none");
-#ifdef _WIN32
-    const uint32_t popupPlacement = (placement == InWindowMenuPlacement::RightOfAnchor)
-        ? (7u | (9u << 16))
-        : 2u;
-    sciterUI.PopupShow(menu, anchor.IsValid() ? (SCITER_ELEMENT)anchor : (SCITER_ELEMENT)menu, popupPlacement);
-#else
-    (void)sciterUI;
-    menu.SetStyleAttribute("behavior", "none");
-    menu.SetStyleAttribute("flow", "vertical");
-    menu.SetStyleAttribute("width", "max-content");
-    menu.SetStyleAttribute("height", "max-content");
-    menu.SetStyleAttribute("position", "absolute");
-    if (placement == InWindowMenuPlacement::BelowAnchor && anchor.IsValid())
+    const uint32_t rightOfAnchor = 9u | (7u << 16);
+#ifndef _WIN32
+    if (placement == MenuPlacement::RightOfAnchor && anchor.IsValid() && IsWaylandSession())
     {
-        const SciterElement::RECT box = anchor.GetLocation(SciterElement::SELF_RELATIVE | SciterElement::BORDER_BOX);
-        menu.SetStyleAttribute("left", SciterUI::stdstr_f("%dpx", box.left).c_str());
-        menu.SetStyleAttribute("top", SciterUI::stdstr_f("%dpx", box.bottom).c_str());
+        const SciterElement::RECT parentBox = anchor.GetParent().GetLocation(SciterElement::ROOT_RELATIVE | SciterElement::PADDING_BOX);
+        menu.SetStyleAttribute("margin-left", SciterUI::stdstr_f("%dpx", -parentBox.left).c_str());
+        menu.SetStyleAttribute("margin-top", SciterUI::stdstr_f("%dpx", -parentBox.top).c_str());
     }
-    menu.SetStyleAttribute("display", "block");
-    SizeInWindowMenuToContent(menu);
 #endif
+    if (placement == MenuPlacement::RightOfAnchor)
+    {
+        menu.SetStyleAttribute("left", "0");
+        menu.SetStyleAttribute("top", "0");
+    }
+    const uint32_t popupPlacement = (placement == MenuPlacement::RightOfAnchor) ? rightOfAnchor : 2u;
+    sciterUI.PopupShow(menu, anchor.IsValid() ? (SCITER_ELEMENT)anchor : (SCITER_ELEMENT)menu, popupPlacement);
     menu.AddClassName("menu-open");
 }
 
@@ -651,6 +670,7 @@ void WidgetMenuBar::HideSubMenu()
 {
     if (m_openSubMenu.IsValid())
     {
+        m_sciterUI.DetachHandler(m_openSubMenu, IID_IMOUSEMOVESINK, (IMouseMoveSink *)this);
         HideMenu(m_openSubMenu);
     }
     if (m_openSubItem.IsValid())
@@ -666,6 +686,7 @@ void WidgetMenuBar::HideShownMenuPopup()
     HideSubMenu();
     if (m_openTopMenu.IsValid())
     {
+        m_sciterUI.DetachHandler(m_openTopMenu, IID_IMOUSEMOVESINK, (IMouseMoveSink *)this);
         HideMenu(m_openTopMenu);
     }
     if (m_openTopItem.IsValid())
@@ -674,6 +695,7 @@ void WidgetMenuBar::HideShownMenuPopup()
     }
     m_openTopMenu = nullptr;
     m_openTopItem = nullptr;
+    m_hoverTopItem = nullptr;
     m_menuActive = false;
 }
 
@@ -770,6 +792,7 @@ void WidgetMenuBar::ShowTopMenu(SciterElement topItem)
     HideSubMenu();
     if (m_openTopMenu.IsValid() && m_openTopMenu != menu)
     {
+        m_sciterUI.DetachHandler(m_openTopMenu, IID_IMOUSEMOVESINK, (IMouseMoveSink *)this);
         HideMenu(m_openTopMenu);
     }
     if (m_openTopItem.IsValid() && m_openTopItem != topItem)
@@ -777,7 +800,8 @@ void WidgetMenuBar::ShowTopMenu(SciterElement topItem)
         m_openTopItem.SetState(0, SciterElement::STATE_OWNS_POPUP | SciterElement::STATE_CURRENT, true);
     }
 
-    ShowMenu(m_sciterUI, menu, topItem, InWindowMenuPlacement::BelowAnchor);
+    ShowMenu(m_sciterUI, menu, topItem, MenuPlacement::BelowAnchor);
+    m_sciterUI.AttachHandler(menu, IID_IMOUSEMOVESINK, (IMouseMoveSink *)this);
 
     topItem.SetState(SciterElement::STATE_OWNS_POPUP | SciterElement::STATE_CURRENT, 0, true);
     m_openTopItem = topItem;
@@ -800,13 +824,17 @@ void WidgetMenuBar::ShowSubMenu(SciterElement item)
     {
         return;
     }
+    m_suppressPopupDismiss = true;
     HideSubMenu();
 
-    ShowMenu(m_sciterUI, menu, item, InWindowMenuPlacement::RightOfAnchor);
+    ShowMenu(m_sciterUI, menu, item, MenuPlacement::RightOfAnchor);
+    m_sciterUI.AttachHandler(menu, IID_IMOUSEMOVESINK, (IMouseMoveSink *)this);
 
     item.SetState(SciterElement::STATE_OWNS_POPUP | SciterElement::STATE_CURRENT, 0, true);
     m_openSubItem = item;
     m_openSubMenu = menu;
+    m_menuActive = true;
+    m_suppressPopupDismiss = false;
 }
 
 void WidgetMenuBar::NotifySinksMenuItem(int32_t id, SCITER_ELEMENT item) const
@@ -840,9 +868,28 @@ bool WidgetMenuBar::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, u
 {
     if (event_code == kPopupDismissedEvent)
     {
+        if (m_suppressPopupDismiss)
+        {
+            return false;
+        }
         SciterElement dismissed(source);
-        if (dismissed == m_openTopMenu || dismissed == m_openSubMenu ||
-            ElementIsUnder(dismissed, m_openTopMenu) || ElementIsUnder(dismissed, m_openSubMenu))
+        const bool subDismissed = m_openSubMenu.IsValid() &&
+            (dismissed == m_openSubMenu || ElementIsUnder(dismissed, m_openSubMenu));
+        if (subDismissed)
+        {
+            if (m_openSubItem.IsValid())
+            {
+                m_openSubItem.SetState(0, SciterElement::STATE_OWNS_POPUP | SciterElement::STATE_CURRENT, true);
+            }
+            m_openSubMenu = nullptr;
+            m_openSubItem = nullptr;
+            return false;
+        }
+        if (m_openSubMenu.IsValid())
+        {
+            return false;
+        }
+        if (m_openTopMenu.IsValid() && dismissed == m_openTopMenu)
         {
             if (m_openSubItem.IsValid())
             {
@@ -891,32 +938,86 @@ bool WidgetMenuBar::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, u
     return false;
 }
 
-bool WidgetMenuBar::OnMouseMove(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, uint32_t /*x*/, uint32_t /*y*/)
+bool WidgetMenuBar::OnMouseMove(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y)
 {
     if (!m_menuActive)
     {
         return false;
     }
 
+    if (m_openSubMenu.IsValid() && m_openSubItem.IsValid())
+    {
+        SciterElement eventElement(element);
+        const SciterElement::RECT eventBox = eventElement.IsValid() ? ViewBox(eventElement) : SciterElement::RECT{0, 0, 0, 0};
+        const int viewX = eventBox.left + (int)x;
+        const int viewY = eventBox.top + (int)y;
+        const SciterElement::RECT subBox = ViewBox(m_openSubMenu);
+        if (!RectContains(subBox, viewX, viewY))
+        {
+            SciterElement parentMenu = m_openSubItem.GetParent();
+            if (parentMenu.IsValid() && RectContains(ViewBox(parentMenu), viewX, viewY))
+            {
+                SciterElement item = MenuItemAtPoint(parentMenu, viewX, viewY);
+                if (item.IsValid() && item != m_openSubItem)
+                {
+                    if (DirectChildMenu(item).IsValid())
+                    {
+                        ShowSubMenu(item);
+                    }
+                    else
+                    {
+                        HideSubMenu();
+                        HighlightOnly(item);
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+
     SciterElement popupItem = FindPopupMenuItem(source);
+    if (!popupItem.IsValid() && ElementIsUnder(source, m_openTopMenu))
+    {
+        m_hoverTopItem = nullptr;
+        return false;
+    }
     if (popupItem.IsValid())
     {
+        m_hoverTopItem = nullptr;
         if (DirectChildMenu(popupItem).IsValid())
         {
             ShowSubMenu(popupItem);
         }
-        else if (m_openSubItem.IsValid() && !ElementIsUnder(popupItem, m_openSubMenu))
+        else if (!ElementIsUnder(popupItem, m_openSubMenu))
         {
-            HideSubMenu();
+            if (m_openSubItem.IsValid())
+            {
+                HideSubMenu();
+            }
+            HighlightOnly(popupItem);
         }
         return false;
     }
 
     SciterElement topItem = FindTopLevelItem(source);
-    if (topItem.IsValid() && DirectChildMenu(topItem).IsValid())
+    if (!topItem.IsValid() || topItem == m_openTopItem || !DirectChildMenu(topItem).IsValid())
     {
-        ShowTopMenu(topItem);
+        m_hoverTopItem = nullptr;
+        return false;
     }
+    if (m_hoverTopItem != topItem)
+    {
+        m_hoverTopItem = topItem;
+        m_hoverX = x;
+        m_hoverY = y;
+        return false;
+    }
+    if (m_hoverX == x && m_hoverY == y)
+    {
+        return false;
+    }
+    m_hoverTopItem = nullptr;
+    ShowTopMenu(topItem);
     return false;
 }
 
@@ -1097,9 +1198,12 @@ void WidgetMenuBar::ReleaseWidget(IWidget * widget)
 WidgetMenuBar::WidgetMenuBar(ISciterUI & sciterUI) :
     m_sciterUI(sciterUI),
     m_baseElement(nullptr),
+    m_hoverX(0),
+    m_hoverY(0),
     m_leftAltDown(false),
     m_rightAltDown(false),
-    m_menuActive(false)
+    m_menuActive(false),
+    m_suppressPopupDismiss(false)
 {
 }
 
