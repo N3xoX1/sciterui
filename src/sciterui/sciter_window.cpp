@@ -508,7 +508,7 @@ void SciterWindow::SetDefaultWindowSize(int x, int y, int width, int height)
 #endif
 }
 
-LRESULT SciterWindow::HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm)
+int64_t SciterWindow::HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm)
 {
     if (pnm == nullptr)
     {
@@ -526,7 +526,7 @@ LRESULT SciterWindow::HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm)
     return 0;
 }
 
-LRESULT SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
+int64_t SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
 {
     if (pnmld == nullptr)
     {
@@ -553,12 +553,12 @@ LRESULT SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
     return LOAD_OK;
 }
 
-LRESULT SciterWindow::OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld)
+int64_t SciterWindow::OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld)
 {
     return m_sciter.AttachWidget((Sciter::LPSCN_ATTACH_BEHAVIOR)pnmld);
 }
 
-LRESULT SciterWindow::OnEngineDestroyed(void)
+int64_t SciterWindow::OnEngineDestroyed(void)
 {
     if (!m_destroyed)
     {
