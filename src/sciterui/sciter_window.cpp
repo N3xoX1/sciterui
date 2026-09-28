@@ -563,6 +563,8 @@ int64_t SciterWindow::OnEngineDestroyed(void)
     if (!m_destroyed)
     {
         m_destroyed = true;
+        ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_HIDDEN, 0);
+        PumpPendingDraws();
 #ifdef WIN32
         if (m_hParent != nullptr)
         {
