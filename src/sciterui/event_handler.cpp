@@ -47,7 +47,7 @@ int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
     else if (evtg == HANDLE_MOUSE && clickSink)
     {
         MOUSE_PARAMS * p = (MOUSE_PARAMS *)prms;
-        if (p->cmd == MOUSE_DOWN || p->cmd == ((uint32_t)MOUSE_DOWN | (uint32_t)SINKING))
+        if (p->cmd == MOUSE_DOWN)
         {
             if (p->button_state == (uint32_t)MAIN_MOUSE_BUTTON)
             {
@@ -60,7 +60,7 @@ int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
                 }
             }
         }
-        else if (p->cmd == MOUSE_UP || p->cmd == ((uint32_t)MOUSE_UP | (uint32_t)SINKING))
+        else if (p->cmd == MOUSE_UP)
         {
             if (handler->m_MouseDown)
             {
