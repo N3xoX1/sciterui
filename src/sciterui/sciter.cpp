@@ -6,8 +6,62 @@
 
 #include "sciter_hwindow.h"
 
+#ifndef WIN32
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#endif
+
 namespace SciterUI
 {
+
+namespace
+{
+#ifndef WIN32
+class ScopedSciterX11Backend
+{
+public:
+    ScopedSciterX11Backend() :
+        m_overridden(false)
+    {
+        const char * sessionType = getenv("XDG_SESSION_TYPE");
+        const char * display = getenv("DISPLAY");
+        const char * desktop = getenv("XDG_CURRENT_DESKTOP");
+        if (sessionType == nullptr || strcmp(sessionType, "wayland") != 0 || display == nullptr || display[0] == '\0')
+        {
+            return;
+        }
+        if (desktop != nullptr && strstr(desktop, "GNOME") != nullptr)
+        {
+            return;
+        }
+        m_sessionType = sessionType;
+        m_overridden = setenv("XDG_SESSION_TYPE", "x11", 1) == 0;
+    }
+
+    ~ScopedSciterX11Backend()
+    {
+        if (m_overridden)
+        {
+            setenv("XDG_SESSION_TYPE", m_sessionType.c_str(), 1);
+        }
+    }
+
+    bool Overridden() const
+    {
+        return m_overridden;
+    }
+
+private:
+    ScopedSciterX11Backend(const ScopedSciterX11Backend &) = delete;
+    ScopedSciterX11Backend & operator=(const ScopedSciterX11Backend &) = delete;
+
+    std::string m_sessionType;
+    bool m_overridden;
+};
+
+#endif
+} // namespace
 
 Sciter::Sciter(const char * languageDir) :
     m_resourceManager(languageDir),
@@ -21,7 +75,12 @@ bool Sciter::Initialize(const char * baseLanguage, const char * currentLanguage,
     {
         return false;
     }
-    SciterExec(SCITER_APP_INIT, (UINT_PTR)0, (UINT_PTR) nullptr);
+    {
+#ifndef WIN32
+        ScopedSciterX11Backend x11Backend;
+#endif
+        SciterExec(SCITER_APP_INIT, (UINT_PTR)0, (UINT_PTR) nullptr);
+    }
     SciterSetOption(NULL, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
     return true;
 }
