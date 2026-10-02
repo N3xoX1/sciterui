@@ -67,7 +67,14 @@
     if (auto window = mainWindow.lock())
     {
         window->Destroy();
+        // A live native handle means either a close veto or an asynchronous
+        // close still pending. Let that close path unwind the host loop.
+        if (window->GetHandle() != nullptr) return NSTerminateCancel;
     }
+    // No native main window remains, including a retained closed wrapper.
+    // Stop the host explicitly; NSTerminateNow would call exit() and skip its
+    // C++ cleanup just as Cocoa's default terminate: does.
+    SciterExec(SCITER_APP_STOP, 0, 0);
     return NSTerminateCancel;
 }
 - (BOOL)respondsToSelector:(SEL)selector
@@ -295,6 +302,9 @@ void ScheduleMacOSWindowClose(std::shared_ptr<SciterWindow> window)
 
 void DetachMacOSWindowTerminationObserver(const void * handle)
 {
+    // This SDK defines HWINDOW as NSWindow*. Its SciterCreateWindow returns
+    // an NSWindow at runtime, including for child windows; SciterCreateNSView
+    // is a separate API. The older API comment saying NSView* is misleading.
     NSWindow * window = (NSWindow *)const_cast<void *>(handle);
     // The Sciter Cocoa content view can outlive its native wing::window when
     // a caller retains DOM elements or the view. Its onAppTerminate: observer
