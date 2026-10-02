@@ -2,6 +2,8 @@
 
 #ifdef WIN32
 #include <Windows.h>
+#elif defined(__linux__)
+#include "x11_host.h"
 #endif
 
 #include <algorithm>
@@ -87,6 +89,9 @@ void ClampWindowSizeToWorkArea(HWINDOW parentWindow, int & width, int & height)
     {
         height = maxHeight;
     }
+#elif defined(__linux__)
+    (void)parentWindow;
+    X11Host::Instance().ClampToWorkArea(width, height);
 #else
     (void)parentWindow;
     (void)width;
@@ -101,6 +106,10 @@ void ScaleWindowSizeForDpi(HWINDOW parentWindow, int & width, int & height)
     width = ::MulDiv(width, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
     height = ::MulDiv(height, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
     ClampWindowSizeToWorkArea(parentWindow, width, height);
+#elif defined(__linux__)
+    (void)parentWindow;
+    X11Host::Instance().ScaleSize(width, height);
+    X11Host::Instance().ClampToWorkArea(width, height);
 #else
     (void)parentWindow;
     (void)width;

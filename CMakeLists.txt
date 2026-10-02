@@ -37,3 +37,9 @@ target_include_directories(sciterui
 )
 
 target_compile_features(sciterui PUBLIC cxx_std_20)
+
+if(UNIX AND NOT APPLE)
+    target_sources(sciterui PRIVATE src/sciterui/x11_host.cpp)
+    find_package(X11 REQUIRED)
+    target_link_libraries(sciterui PUBLIC X11::X11)
+endif()

@@ -5,63 +5,12 @@
 #include "std_string.h"
 
 #include "sciter_hwindow.h"
-
-#ifndef WIN32
-#include <stdlib.h>
-#include <string.h>
-#include <string>
+#if defined(__linux__)
+#include "x11_host.h"
 #endif
 
 namespace SciterUI
 {
-
-namespace
-{
-#ifndef WIN32
-class ScopedSciterX11Backend
-{
-public:
-    ScopedSciterX11Backend() :
-        m_overridden(false)
-    {
-        const char * sessionType = getenv("XDG_SESSION_TYPE");
-        const char * display = getenv("DISPLAY");
-        const char * desktop = getenv("XDG_CURRENT_DESKTOP");
-        if (sessionType == nullptr || strcmp(sessionType, "wayland") != 0 || display == nullptr || display[0] == '\0')
-        {
-            return;
-        }
-        if (desktop != nullptr && strstr(desktop, "GNOME") != nullptr)
-        {
-            return;
-        }
-        m_sessionType = sessionType;
-        m_overridden = setenv("XDG_SESSION_TYPE", "x11", 1) == 0;
-    }
-
-    ~ScopedSciterX11Backend()
-    {
-        if (m_overridden)
-        {
-            setenv("XDG_SESSION_TYPE", m_sessionType.c_str(), 1);
-        }
-    }
-
-    bool Overridden() const
-    {
-        return m_overridden;
-    }
-
-private:
-    ScopedSciterX11Backend(const ScopedSciterX11Backend &) = delete;
-    ScopedSciterX11Backend & operator=(const ScopedSciterX11Backend &) = delete;
-
-    std::string m_sessionType;
-    bool m_overridden;
-};
-
-#endif
-} // namespace
 
 Sciter::Sciter(const char * languageDir) :
     m_resourceManager(languageDir),
@@ -75,19 +24,26 @@ bool Sciter::Initialize(const char * baseLanguage, const char * currentLanguage,
     {
         return false;
     }
+#if defined(__linux__)
+    if (!X11Host::Instance().Init())
     {
-#ifndef WIN32
-        ScopedSciterX11Backend x11Backend;
-#endif
-        SciterExec(SCITER_APP_INIT, (UINT_PTR)0, (UINT_PTR) nullptr);
+        return false;
     }
+#else
+    SciterExec(SCITER_APP_INIT, (UINT_PTR)0, (UINT_PTR) nullptr);
+#endif
     SciterSetOption(NULL, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
     return true;
 }
 
 void Sciter::UpdateWindow(HWINDOW hwnd)
 {
+#if defined(__linux__)
+    SciterWindow * window = FindSciterWindow(hwnd);
+    X11Host::Instance().Invalidate(window != nullptr ? window->GetHandle() : hwnd, 0, 0, 0, 0);
+#else
     SciterUpdateWindow((SciterHWINDOW)hwnd);
+#endif
 }
 
 bool Sciter::AttachHandler(SCITER_ELEMENT elemHandle, const char * riid, void * pinterface)
@@ -169,7 +125,11 @@ SciterWindow * Sciter::FindSciterWindow(HWINDOW hwnd) const
     for (WindowSet::const_iterator itr = m_windows.begin(); itr != m_windows.end(); itr++)
     {
         SciterWindow * window = *itr;
+#if defined(__linux__)
+        if (window->GetHandle() == hwnd || (HWINDOW)window == hwnd)
+#else
         if (window->GetHandle() == hwnd)
+#endif
         {
             return window;
         }
@@ -260,6 +220,8 @@ bool Sciter::RegisterWidgetType(const char * name, tyCreateWidget createWidget, 
     m_widgetFactory.insert(WidgetMap::value_type(name, widgetCallbackInfo));
     if (widgetCss != nullptr && strlen(widgetCss) > 0)
     {
+        m_widgetCss.append(widgetCss);
+        m_widgetCss.push_back('\n');
         if (!SciterAppendMasterCSS((LPCBYTE)widgetCss, (uint32_t)strlen(widgetCss)))
         {
             return false;
@@ -294,17 +256,34 @@ uint32_t Sciter::AttachWidget(LPSCN_ATTACH_BEHAVIOR lpab)
 
 void Sciter::Run()
 {
+#if defined(__linux__)
+    X11Host::Instance().Run();
+#else
     SciterExec(SCITER_APP_LOOP, 0, 0);
+#endif
 }
 
 void Sciter::Stop()
 {
+#if defined(__linux__)
+    X11Host::Instance().Stop();
+#else
     SciterExec(SCITER_APP_STOP, 0, 0);
+#endif
 }
 
 void Sciter::Shutdown()
 {
+#if defined(__linux__)
+    X11Host::Instance().Shutdown();
+#else
     SciterExec(SCITER_APP_SHUTDOWN, 0, 0);
+#endif
+}
+
+const std::string & Sciter::WidgetCss() const
+{
+    return m_widgetCss;
 }
 
 ResourceManager & Sciter::GetResourceManager(void)
