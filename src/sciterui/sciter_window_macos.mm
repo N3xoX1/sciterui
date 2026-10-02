@@ -118,8 +118,8 @@ void ScheduleMacOSWindowClose(std::shared_ptr<SciterWindow> window)
 void DetachMacOSWindowTerminationObserver(const void * handle)
 {
     // This SDK defines HWINDOW as NSWindow*. Its SciterCreateWindow returns
-    // an NSWindow at runtime; SciterCreateNSView is a separate API. Keep a
-    // native regression test because the older API comment says NSView*.
+    // an NSWindow at runtime, including for child windows; SciterCreateNSView
+    // is a separate API. The older API comment saying NSView* is misleading.
     NSWindow * window = (NSWindow *)const_cast<void *>(handle);
     // The Sciter Cocoa content view can outlive its native wing::window when
     // a caller retains DOM elements or the view. Its onAppTerminate: observer
