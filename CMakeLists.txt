@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(sciterui)
 
+option(SCITERUI_BUILD_TESTS "Build SciterUI regression tests" OFF)
+
 set(SCITERUI_SOURCES
     src/sciterui/base_element.cpp
     src/sciterui/event_handler.cpp
@@ -48,4 +50,9 @@ if(UNIX AND NOT APPLE)
     target_sources(sciterui PRIVATE src/sciterui/x11_host.cpp)
     find_package(X11 REQUIRED)
     target_link_libraries(sciterui PUBLIC X11::X11)
+endif()
+
+if(SCITERUI_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
