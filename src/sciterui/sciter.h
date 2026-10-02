@@ -84,6 +84,7 @@ public:
     void Shutdown() override;
 
     ResourceManager & GetResourceManager(void);
+    const std::string & WidgetCss() const;
 #ifdef WIN32
     const std::wstring & WindowClass();
 #endif
@@ -99,6 +100,7 @@ private:
     WindowSet m_windows;
     WindowList m_CreatedWindows;
     WidgetMap m_widgetFactory;
+    std::string m_widgetCss;
     ElementMap m_elementBases;
     uint32_t m_nextWidgetId;
 
