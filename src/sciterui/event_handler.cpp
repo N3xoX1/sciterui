@@ -1,4 +1,5 @@
 #include "event_handler.h"
+#include "sciter.h"
 #include "std_string.h"
 #include <sciter_element.h>
 #include <sciter_handler.h>
@@ -181,6 +182,44 @@ int EventHandler::MousedUpDownHandler(void* tag, SCITER_ELEMENT he, uint32_t evt
         }
     }
     return false;
+}
+
+int EventHandler::ContextMenuHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
+{
+    auto * handler = static_cast<EventHandler *>(tag);
+    if (handler == nullptr) return false;
+    if (evtg == SUBSCRIPTIONS_REQUEST)
+    {
+        *static_cast<uint32_t *>(prms) = handler->m_Subscription;
+        return true;
+    }
+    if (evtg != HANDLE_MOUSE) return false;
+    // A native context menu runs a tracking loop. Closing its owner can detach
+    // this handler before OnContextMenu returns.
+    const auto keepAlive = handler->shared_from_this();
+    auto * mouse = static_cast<MOUSE_PARAMS *>(prms);
+    // Capture the press before the implicit context-menu path runs. On release
+    // button_state may already be zero, so do not infer the clicked button then.
+    if (mouse->cmd == (MOUSE_UP | SINKING) && handler->m_MouseDown)
+    {
+        handler->m_MouseDown = false;
+        return true;
+    }
+    bool contextPress = mouse->button_state == PROP_MOUSE_BUTTON;
+#ifdef __APPLE__
+    contextPress = contextPress || (mouse->button_state == MAIN_MOUSE_BUTTON &&
+                                   (mouse->alt_state & KEYBOARD_STATE_CONTROL) != 0);
+#endif
+    if (mouse->cmd != (MOUSE_DOWN | SINKING)) return false;
+    handler->m_MouseDown = false;
+    if (!contextPress) return false;
+    auto * sink = static_cast<IContextMenuSink *>(handler->m_Interface);
+    Sciter::ContextMenuScope context(handler->m_Sciter, mouse->target);
+    const bool handled = sink && sink->OnContextMenu(he, mouse->target, mouse->pos_view.x, mouse->pos_view.y);
+    // Cocoa already consumed the release in its synchronous tracking loop.
+    // Only the asynchronous Sciter popup needs its opening release swallowed.
+    handler->m_MouseDown = handled && !context.nativeShown;
+    return handled;
 }
 
 int EventHandler::MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)

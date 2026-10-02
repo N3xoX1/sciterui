@@ -18,6 +18,7 @@ public:
     static int sui_callback TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
     static int sui_callback KeyHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
     static int sui_callback MousedUpDownHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
+    static int sui_callback ContextMenuHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
     static int sui_callback MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
     static int sui_callback ResizeHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
     static int sui_callback ForwardBehaviorHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);

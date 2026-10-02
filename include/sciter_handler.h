@@ -21,6 +21,13 @@ suinterface IMouseUpDownSink
 };
 static const char * IID_IMOUSEUPDOWNSINK = "4C82DCC8-FEC7-4F74-A0EC-399F56742F59";
 
+// Coordinates are relative to the Sciter view, not the clicked element.
+suinterface IContextMenuSink
+{
+    virtual bool OnContextMenu(SCITER_ELEMENT element, SCITER_ELEMENT source, int32_t x, int32_t y) = 0;
+};
+static const char * IID_ICONTEXTMENUSINK = "3FDB1056-6702-4A57-8819-49E28C2A7C07";
+
 suinterface IMouseMoveSink
 {
     virtual bool OnMouseMove(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y) = 0;

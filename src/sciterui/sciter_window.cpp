@@ -712,6 +712,11 @@ bool SciterWindow::GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventP
         eventProc = &EventHandler::MousedUpDownHandler;
         subscription = HANDLE_MOUSE;
     }
+    else if (strcmp(IID_ICONTEXTMENUSINK, riid) == 0)
+    {
+        eventProc = &EventHandler::ContextMenuHandler;
+        subscription = HANDLE_MOUSE;
+    }
     else if (strcmp(IID_IMOUSEMOVESINK, riid) == 0)
     {
         eventProc = &EventHandler::MousedMoveHandler;

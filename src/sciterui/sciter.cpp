@@ -5,6 +5,9 @@
 #include "std_string.h"
 
 #include "sciter_hwindow.h"
+#ifdef __APPLE__
+#include "sciter_window_macos.h"
+#endif
 #if defined(__linux__)
 #include "x11_host.h"
 #endif
@@ -202,6 +205,19 @@ void Sciter::PopupShow(SCITER_ELEMENT hePopup, SCITER_ELEMENT heAnchor, uint32_t
 
 void Sciter::PopupShowAt(SCITER_ELEMENT hePopup, SCITER_POINT pos, uint32_t placement)
 {
+#ifdef __APPLE__
+    // Cocoa owns context menu placement, Retina sizing and tracking. Other
+    // popups (including tooltips) continue through the Sciter popup API.
+    SciterElement popup(hePopup);
+    if (placement == 7 && contextMenuScope && contextMenuScope->source.IsValid() &&
+        popup.IsValid() && popup.GetAttribute("class") == "context" &&
+        popup.GetAttribute("data-sciter-popup") != "dom")
+    {
+        if (auto * window = FindSciterWindow(popup.GetElementHwnd(true));
+            window && ShowMacOSContextMenu(window->shared_from_this(), hePopup, pos,
+                                           contextMenuScope->source, contextMenuScope->nativeShown)) return;
+    }
+#endif
     POINT point;
     point.x = pos.x;
     point.y = pos.y;

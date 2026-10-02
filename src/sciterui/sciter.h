@@ -41,6 +41,23 @@ class Sciter :
     typedef std::map<std::string, WidgetCallbackInfo> WidgetMap;
 
 public:
+    // Preserve the clicked owner through synchronous/nested native menu loops.
+    struct ContextMenuScope
+    {
+        ContextMenuScope(Sciter & sciter, SCITER_ELEMENT source) :
+            sciter(sciter), previous(sciter.contextMenuScope), source(source)
+        {
+            sciter.contextMenuScope = this;
+        }
+        ~ContextMenuScope() { sciter.contextMenuScope = previous; }
+        ContextMenuScope(const ContextMenuScope &) = delete;
+        ContextMenuScope & operator=(const ContextMenuScope &) = delete;
+        Sciter & sciter;
+        ContextMenuScope * previous;
+        SciterElement source;
+        bool nativeShown = false;
+    };
+
     typedef int sui_callback ElementEventProc(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms);
 
     /**This structure is used by #SC_ATTACH_BEHAVIOR notification.
@@ -90,6 +107,7 @@ public:
 #endif
 
 private:
+    ContextMenuScope * contextMenuScope = nullptr;
     Sciter() = delete;
     Sciter(const Sciter &) = delete;
     Sciter & operator=(const Sciter &) = delete;
