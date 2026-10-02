@@ -1,13 +1,14 @@
 #pragma once
 #include <sciter_ui.h>
 #include <stdint.h>
+#include <memory>
 
 namespace SciterUI
 {
 
 class Sciter;
 
-class EventHandler
+class EventHandler : public std::enable_shared_from_this<EventHandler>
 {
 public:
     EventHandler(Sciter & sciter, SCITER_ELEMENT element, void * interfacePtr, uint32_t subscription);

@@ -3,6 +3,7 @@
 #include "std_string.h"
 #include <memory>
 #include <sciter_ui.h>
+#include <sciter_element.h>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,8 @@ class X11Host;
 #endif
 
 class SciterWindow :
-    public ISciterWindow
+    public ISciterWindow,
+    public std::enable_shared_from_this<SciterWindow>
 {
     /**Notification callback structure.**/
     typedef struct SCITER_CALLBACK_NOTIFICATION
@@ -98,7 +100,7 @@ private:
 
     struct RegisteredSink
     {
-        RegisteredSink(SCITER_ELEMENT Element_, const char * riid_, void * Interface_, std::unique_ptr<EventHandler> Sink_) :
+        RegisteredSink(SCITER_ELEMENT Element_, const char * riid_, void * Interface_, std::shared_ptr<EventHandler> Sink_) :
             Element(Element_),
             Interface(Interface_),
             Sink(std::move(Sink_)),
@@ -109,9 +111,11 @@ private:
         {
             return (Element == lSink.Element) && (Interface == lSink.Interface) && riid == lSink.riid;
         }
-        SCITER_ELEMENT Element;
+        // DOM replacement can detach an element before the window is closed.
+        // Keep its handle valid until its registered native handler is removed.
+        SciterElement Element;
         void * Interface;
-        std::unique_ptr<EventHandler> Sink;
+        std::shared_ptr<EventHandler> Sink;
         std::string riid;
     };
     typedef std::vector<RegisteredSink> EventSinks;
