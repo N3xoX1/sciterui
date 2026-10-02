@@ -33,23 +33,6 @@ SciterHWINDOW EngineHandle(const SciterWindow & window)
 #endif
 }
 
-#if !defined(__linux__)
-void PumpPendingDraws()
-{
-    for (int i = 0; i < 4; ++i)
-    {
-        if (!SciterExec(SCITER_APP_LOOP_HEARTBIT, 0, 0))
-        {
-            break;
-        }
-        if (!SciterExec(SCITER_APP_LOOP_ITERATION, 0, 0))
-        {
-            break;
-        }
-    }
-}
-#endif
-
 #if defined(__linux__)
 bool IsNameChar(unsigned char c)
 {
@@ -256,6 +239,11 @@ void InjectWidgetCss(std::string & html, const std::string & css)
 #endif
 } // namespace
 
+#ifdef __APPLE__
+void DetachMacOSWindowTerminationObserver(const void * handle);
+void ScheduleMacOSWindowClose(std::shared_ptr<SciterWindow> window);
+#endif
+
 SciterWindow::SciterWindow(Sciter & sciter) :
     m_sciter(sciter),
     m_hWnd(nullptr),
@@ -312,7 +300,7 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
     Frame.right = x + width;
     Frame.bottom = y + height;
 
-    m_hWnd = ::SciterCreateWindow(flags, (Frame.right - Frame.left) > 0 ? &Frame : nullptr, nullptr, this, (SciterHWINDOW)parentWinow);
+    m_hWnd = ::SciterCreateWindow(flags, (Frame.right - Frame.left) > 0 ? &Frame : nullptr, nullptr, nullptr, (SciterHWINDOW)parentWinow);
 #endif
     if (m_hWnd != nullptr)
     {
@@ -333,7 +321,6 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
         if (!LoadHtml(htmlFile))
         {
             SetDestroyed();
-            m_sciter.WindowDestroyed(this);
             if (m_hWnd != nullptr)
             {
 #ifdef WIN32
@@ -341,10 +328,11 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
 #elif defined(__linux__)
                 X11Host::Instance().Abandon(*this);
 #else
-                ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, FALSE);
+                ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, TRUE);
 #endif
                 m_hWnd = nullptr;
             }
+            m_sciter.WindowDestroyed(this);
             return false;
         }
 #if defined(__linux__)
@@ -517,40 +505,51 @@ bool SciterWindow::QueryClose() const
 
 bool SciterWindow::Destroy()
 {
+    // Engine destruction removes the owner's reference synchronously. Keep the
+    // wrapper alive until this call (including close sinks) has returned.
+    const auto keepAlive = shared_from_this();
     if (m_hWnd == nullptr || m_destroyed)
     {
         return false;
     }
 #ifdef WIN32
-    return PostMessage((HWND)m_hWnd, WM_CLOSE, 0, 0) != 0;
-#elif defined(__linux__)
+    const HWND hwnd = (HWND)m_hWnd;
+#endif
     if (!QueryClose())
     {
         return false;
     }
-    X11Host::Instance().Close(*this);
-    return true;
-#else
-    if (!QueryClose())
+    if (m_destroyed || m_hWnd == nullptr)
     {
         return false;
     }
     SetDestroyed();
-    PumpPendingDraws();
-    ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, FALSE);
-    return true;
+#ifdef WIN32
+    return PostMessage(hwnd, WM_CLOSE, 0, 0) != 0;
+#elif defined(__linux__)
+    X11Host::Instance().Close(*this);
+#elif defined(__APPLE__)
+    // Closing from a timer or DOM callback must not destroy the native engine
+    // while its heartbeat is still traversing the engine's dispatch list.
+    ScheduleMacOSWindowClose(keepAlive);
+#else
+    ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, TRUE);
 #endif
+    return true;
 }
 
 void SciterWindow::RunModal()
 {
+    // The modal loop resumes after the callback that removes this window from
+    // m_CreatedWindows. Its loop condition must still have a live wrapper.
+    const auto keepAlive = shared_from_this();
     if (m_hWnd == nullptr || m_destroyed)
     {
         return;
     }
 #ifdef WIN32
     const HWND hwnd = (HWND)m_hWnd;
-    while (!m_destroyed && IsWindow(hwnd))
+    while (m_hWnd != nullptr && IsWindow(hwnd))
     {
         if (!SciterExec(SCITER_APP_LOOP_ITERATION, 0, 0))
         {
@@ -560,7 +559,7 @@ void SciterWindow::RunModal()
 #elif defined(__linux__)
     X11Host::Instance().RunModal(this);
 #else
-    while (!m_destroyed)
+    while (m_hWnd != nullptr)
     {
         if (!SciterExec(SCITER_APP_LOOP_ITERATION, 0, 0))
         {
@@ -582,6 +581,9 @@ void SciterWindow::SetDestroyed(void)
         return;
     }
     m_destroyed = true;
+#ifdef __APPLE__
+    DetachMacOSWindowTerminationObserver(m_hWnd);
+#endif
     if (m_hParent != nullptr)
     {
         if (m_hWnd != nullptr)
@@ -613,7 +615,7 @@ void SciterWindow::SetDestroyed(void)
         uint32_t subscription = 0;
         if (GetEventProc(itr->riid.c_str(), eventProc, subscription) && eventProc != nullptr)
         {
-            SciterDetachEventHandler((HELEMENT)itr->Element, (::LPELEMENT_EVENT_PROC)eventProc, handler);
+            SciterDetachEventHandler((HELEMENT)(SCITER_ELEMENT)itr->Element, (::LPELEMENT_EVENT_PROC)eventProc, handler);
         }
     }
     m_eventSinks.clear();
@@ -634,7 +636,7 @@ bool SciterWindow::AttachHandler(SCITER_ELEMENT element, const char * riid, void
     {
         return false;
     }
-    std::unique_ptr<EventHandler> eventHandler(new EventHandler(m_sciter, element, interfacePtr, subscription));
+    auto eventHandler = std::make_shared<EventHandler>(m_sciter, element, interfacePtr, subscription);
     if (eventHandler.get())
     {
         SCDOM_RESULT hr = SciterAttachEventHandler((HELEMENT)element, (::LPELEMENT_EVENT_PROC)eventProc, eventHandler.get());
@@ -911,6 +913,9 @@ int64_t SciterWindow::OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld)
 
 int64_t SciterWindow::OnEngineDestroyed(void)
 {
+#ifdef __APPLE__
+    DetachMacOSWindowTerminationObserver(m_hWnd);
+#endif
     if (!m_destroyed)
     {
         m_destroyed = true;
@@ -918,7 +923,6 @@ int64_t SciterWindow::OnEngineDestroyed(void)
         X11Host::Instance().Hide(*this);
 #else
         ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_HIDDEN, 0);
-        PumpPendingDraws();
 #endif
 #ifdef WIN32
         if (m_hParent != nullptr)
@@ -940,6 +944,7 @@ int64_t SciterWindow::OnEngineDestroyed(void)
         (*itr)->OnWindowDestroy(m_hWnd);
     }
     m_onDestroySink.clear();
+    m_hWnd = nullptr;
     m_sciter.WindowDestroyed(this);
     return 0;
 }
@@ -947,6 +952,11 @@ int64_t SciterWindow::OnEngineDestroyed(void)
 UINT SciterWindow::SciterCallback(LPSCITER_CALLBACK_NOTIFICATION pnm, LPVOID param)
 {
     SciterWindow * Self = (SciterWindow *)param;
+    if (Self == nullptr)
+    {
+        return 0;
+    }
+    const auto keepAlive = Self->shared_from_this();
     return (UINT)Self->HandleNotification(pnm);
 }
 } // namespace SciterUI

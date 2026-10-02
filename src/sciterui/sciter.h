@@ -37,7 +37,7 @@ class Sciter :
         tyReleaseWidget releaseWidget;
     };
 
-    typedef std::vector<std::unique_ptr<SciterWindow>> WindowList;
+    typedef std::vector<std::shared_ptr<SciterWindow>> WindowList;
     typedef std::map<std::string, WidgetCallbackInfo> WidgetMap;
 
 public:

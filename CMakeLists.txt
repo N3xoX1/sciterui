@@ -28,6 +28,12 @@ set(SCITERUI_SOURCES
 
 add_library(sciterui STATIC ${SCITERUI_SOURCES})
 
+if(APPLE)
+    enable_language(OBJCXX)
+    target_sources(sciterui PRIVATE src/sciterui/sciter_window_macos.mm)
+    target_link_libraries(sciterui PUBLIC "-framework AppKit")
+endif()
+
 target_include_directories(sciterui
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include

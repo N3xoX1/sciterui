@@ -11,6 +11,11 @@
 
 namespace SciterUI
 {
+#ifdef __APPLE__
+void InstallMacOSApplicationTerminationHandler(std::shared_ptr<SciterWindow> window);
+void RemoveMacOSApplicationTerminationHandler();
+#endif
+
 
 Sciter::Sciter(const char * languageDir) :
     m_resourceManager(languageDir),
@@ -174,11 +179,17 @@ bool Sciter::LoadResource(const char * uri, std::vector<uint8_t> & out)
 
 bool Sciter::WindowCreate(HWINDOW parent, const char * baseHtml, int x, int y, int width, int height, unsigned int flags, ISciterWindow *& window)
 {
-    std::unique_ptr<SciterWindow> sciterWindow(new SciterWindow(*this));
+    auto sciterWindow = std::make_shared<SciterWindow>(*this);
     if (!sciterWindow->Create(parent, baseHtml, x, y, width, height, flags))
     {
         return false;
     }
+#ifdef __APPLE__
+    if ((flags & SUIW_MAIN) != 0)
+    {
+        InstallMacOSApplicationTerminationHandler(sciterWindow);
+    }
+#endif
     window = sciterWindow.get();
     m_CreatedWindows.emplace_back(std::move(sciterWindow));
     return true;
@@ -279,6 +290,9 @@ void Sciter::Shutdown()
 #else
     SciterExec(SCITER_APP_SHUTDOWN, 0, 0);
 #endif
+#ifdef __APPLE__
+    RemoveMacOSApplicationTerminationHandler();
+#endif
 }
 
 const std::string & Sciter::WidgetCss() const
@@ -364,7 +378,14 @@ LRESULT CALLBACK Sciter::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             SciterWindow * window = sciter->FindSciterWindow(hwnd);
             if (window != nullptr)
             {
-                if (!window->QueryClose())
+                // A close sink can run a modal loop that destroys this window.
+                // Keep the wrapper alive until native close processing resumes.
+                const auto keepAlive = window->shared_from_this();
+                if (!window->IsClosed() && !window->QueryClose())
+                {
+                    return 0;
+                }
+                if (!IsWindow(hwnd) || window->GetHandle() != hwnd)
                 {
                     return 0;
                 }
