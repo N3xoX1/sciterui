@@ -28,6 +28,9 @@ int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
 {
     EventHandler * handler = (EventHandler *)tag;
     if (handler == nullptr) return false;
+    // The engine can notify detach while the registration is being released.
+    // Initialization does not call a sink or require ownership of the tag.
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     IClickSink * clickSink = handler != nullptr ? (IClickSink *)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
@@ -115,6 +118,7 @@ int EventHandler::DoubleClickHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg
 {
     EventHandler * handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     IDoubleClickSink * clickSink = handler != nullptr ? (IDoubleClickSink*)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
@@ -143,6 +147,7 @@ int EventHandler::TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
 {
     EventHandler * handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     ITimerSink* TimerSink = handler != nullptr ? (ITimerSink*)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
@@ -167,6 +172,7 @@ int EventHandler::MousedUpDownHandler(void* tag, SCITER_ELEMENT he, uint32_t evt
 {
     EventHandler * handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     IMouseUpDownSink * mouseUpDownSink = handler != nullptr ? (IMouseUpDownSink*)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
@@ -198,6 +204,7 @@ int EventHandler::ContextMenuHandler(void * tag, SCITER_ELEMENT he, uint32_t evt
 {
     auto * handler = static_cast<EventHandler *>(tag);
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         *static_cast<uint32_t *>(prms) = handler->m_Subscription;
@@ -236,6 +243,7 @@ int EventHandler::MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg
 {
     EventHandler * handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     IMouseMoveSink * mouseMoveSink = handler != nullptr ? (IMouseMoveSink*)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
@@ -263,6 +271,7 @@ int EventHandler::KeyHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* 
 {
     EventHandler * handler = (EventHandler *)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
@@ -298,6 +307,7 @@ int EventHandler::ResizeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, voi
 {
     EventHandler* handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
@@ -325,6 +335,7 @@ int EventHandler::ForwardBehaviorHandler(void* tag, SCITER_ELEMENT he, uint32_t 
 {
     EventHandler* handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
@@ -360,6 +371,7 @@ int EventHandler::StateChangeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg
 {
     EventHandler* handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
@@ -390,6 +402,7 @@ int EventHandler::EventSinkHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, 
 {
     EventHandler* handler = (EventHandler*)tag;
     if (handler == nullptr) return false;
+    if (evtg == HANDLE_INITIALIZATION) return true;
     const auto keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
