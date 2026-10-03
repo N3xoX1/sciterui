@@ -6,14 +6,12 @@
 #include <sciter_element.h>
 #include <set>
 #include <string>
+#include <list>
 #include <vector>
 
 namespace SciterUI
 {
 class Sciter;
-#if defined(__linux__)
-class X11Host;
-#endif
 
 class SciterWindow :
     public ISciterWindow,
@@ -89,9 +87,6 @@ public:
     bool IsClosed() const override;
 
     friend class Sciter;
-#if defined(__linux__)
-    friend class X11Host;
-#endif
 
 private:
     SciterWindow(void) = delete;
@@ -101,9 +96,9 @@ private:
     struct RegisteredSink
     {
         RegisteredSink(SCITER_ELEMENT Element_, const char * riid_, void * Interface_, std::shared_ptr<EventHandler> Sink_) :
+            Sink(std::move(Sink_)),
             Element(Element_),
             Interface(Interface_),
-            Sink(std::move(Sink_)),
             riid(riid_)
         {
         }
@@ -111,27 +106,28 @@ private:
         {
             return (Element == lSink.Element) && (Interface == lSink.Interface) && riid == lSink.riid;
         }
-        // DOM replacement can detach an element before the window is closed.
-        // Keep its handle valid until its registered native handler is removed.
+        // Members are destroyed in reverse order. Releasing the last element
+        // reference can send BEHAVIOR_DETACH: its callback must still own Sink.
+        std::shared_ptr<EventHandler> Sink;
         SciterElement Element;
         void * Interface;
-        std::shared_ptr<EventHandler> Sink;
         std::string riid;
     };
-    typedef std::vector<RegisteredSink> EventSinks;
+    typedef std::list<RegisteredSink> EventSinks;
 
     void Show();
     bool Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags);
     void SetDestroyed(void);
+#if defined(__linux__)
+    static int sui_callback LinuxWindowEvent(void * tag, SCITER_ELEMENT element, uint32_t eventGroup, void * params);
+#endif
     bool AttachHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr);
+    bool HasHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr) const;
     bool DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr);
     void Bind();
     bool LoadHtml(const char * url);
     bool GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventProc, uint32_t & subscription);
     void SetDefaultWindowSize(int x, int y, int width, int height);
-#if defined(__linux__)
-    void ApplyDocumentChrome();
-#endif
     int64_t HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm);
     int64_t OnLoadData(LPSCN_LOAD_DATA pnmld);
     int64_t OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld);
@@ -147,18 +143,15 @@ private:
     int m_parentState;
     int m_layoutWidth;
     int m_layoutHeight;
+#if defined(__linux__)
+    std::string m_applicationId;
+#endif
     EventSinks m_eventSinks;
     WinDestroySinks m_onDestroySink;
     WinCloseSinks m_onCloseSink;
     bool m_bound;
     bool m_destroyed;
     bool m_parentEnabled;
-#if defined(__linux__)
-    int m_documentMinWidth;
-    int m_documentMinHeight;
-    bool m_documentResizable;
-    std::string m_documentIcon;
-#endif
 };
 
 } // namespace SciterUI
