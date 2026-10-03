@@ -6,7 +6,7 @@
 #include "std_string.h"
 #include "sciter_hwindow.h"
 #if defined(__linux__)
-#include "x11_host.h"
+#include "linux_engine_loop.h"
 #endif
 #include <sciter_element.h>
 #include <sciter_handler.h>
@@ -20,224 +20,6 @@
 
 namespace SciterUI
 {
-
-namespace
-{
-
-SciterHWINDOW EngineHandle(const SciterWindow & window)
-{
-#if defined(__linux__)
-    return (SciterHWINDOW)const_cast<SciterWindow *>(&window);
-#else
-    return (SciterHWINDOW)window.GetHandle();
-#endif
-}
-
-#if defined(__linux__)
-bool IsNameChar(unsigned char c)
-{
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_';
-}
-
-bool UriEndsWith(const sui_wchar * uri, const char * suffix)
-{
-    if (uri == nullptr || suffix == nullptr)
-    {
-        return false;
-    }
-    size_t length = 0;
-    while (uri[length] != 0)
-    {
-        ++length;
-    }
-    const size_t suffixLength = std::strlen(suffix);
-    if (length < suffixLength)
-    {
-        return false;
-    }
-    for (size_t i = 0; i < suffixLength; ++i)
-    {
-        unsigned char got = static_cast<unsigned char>(uri[length - suffixLength + i]);
-        unsigned char expect = static_cast<unsigned char>(suffix[i]);
-        if (got >= 'A' && got <= 'Z')
-        {
-            got = static_cast<unsigned char>(got - 'A' + 'a');
-        }
-        if (expect >= 'A' && expect <= 'Z')
-        {
-            expect = static_cast<unsigned char>(expect - 'A' + 'a');
-        }
-        if (got != expect)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool TakeAttribute(std::string & tag, const char * name, std::string * value)
-{
-    const size_t nameLength = std::strlen(name);
-    for (size_t pos = 0; pos < tag.size(); ++pos)
-    {
-        if (tag.compare(pos, nameLength, name) != 0)
-        {
-            continue;
-        }
-        const bool boundaryBefore = pos == 0 || !IsNameChar(static_cast<unsigned char>(tag[pos - 1]));
-        const size_t after = pos + nameLength;
-        const bool boundaryAfter = after >= tag.size() || !IsNameChar(static_cast<unsigned char>(tag[after]));
-        if (!boundaryBefore || !boundaryAfter)
-        {
-            continue;
-        }
-        size_t end = after;
-        std::string captured;
-        if (end < tag.size() && tag[end] == '=')
-        {
-            ++end;
-            if (end < tag.size() && (tag[end] == '"' || tag[end] == '\''))
-            {
-                const char quote = tag[end++];
-                const size_t valueStart = end;
-                while (end < tag.size() && tag[end] != quote)
-                {
-                    ++end;
-                }
-                captured = tag.substr(valueStart, end - valueStart);
-                if (end < tag.size())
-                {
-                    ++end;
-                }
-            }
-            else
-            {
-                const size_t valueStart = end;
-                while (end < tag.size() && tag[end] != ' ' && tag[end] != '\t' && tag[end] != '\n' && tag[end] != '\r')
-                {
-                    ++end;
-                }
-                captured = tag.substr(valueStart, end - valueStart);
-            }
-        }
-        size_t start = pos;
-        if (start > 0 && (tag[start - 1] == ' ' || tag[start - 1] == '\t' || tag[start - 1] == '\n' || tag[start - 1] == '\r'))
-        {
-            --start;
-        }
-        tag.erase(start, end - start);
-        if (value != nullptr)
-        {
-            *value = captured;
-        }
-        return true;
-    }
-    return false;
-}
-
-bool StripNativeWindowAttributes(std::string & html, int & minWidth, int & minHeight, std::string & icon, bool & resizable)
-{
-    const size_t start = html.find("<html");
-    if (start == std::string::npos)
-    {
-        return false;
-    }
-    if (start + 5 < html.size() && IsNameChar(static_cast<unsigned char>(html[start + 5])))
-    {
-        return false;
-    }
-    bool inQuote = false;
-    char quote = 0;
-    size_t end = start;
-    for (; end < html.size(); ++end)
-    {
-        const char c = html[end];
-        if (inQuote)
-        {
-            if (c == quote)
-            {
-                inQuote = false;
-            }
-        }
-        else if (c == '"' || c == '\'')
-        {
-            inQuote = true;
-            quote = c;
-        }
-        else if (c == '>')
-        {
-            break;
-        }
-    }
-    if (end >= html.size())
-    {
-        return false;
-    }
-    std::string tag = html.substr(start, end - start);
-    std::string value;
-    bool changed = false;
-    if (TakeAttribute(tag, "window-min-width", &value))
-    {
-        minWidth = std::atoi(value.c_str());
-        changed = true;
-    }
-    if (TakeAttribute(tag, "window-min-height", &value))
-    {
-        minHeight = std::atoi(value.c_str());
-        changed = true;
-    }
-    if (TakeAttribute(tag, "window-icon", &value))
-    {
-        icon = value;
-        changed = true;
-    }
-    if (TakeAttribute(tag, "window-resizable", &value))
-    {
-        resizable = value != "false" && value != "0";
-        changed = true;
-    }
-    const char * names[] = {
-        "window-blurbehind",
-        "window-max-width",
-        "window-max-height",
-        "window-minimizable",
-        "window-maximizable",
-    };
-    for (const char * name : names)
-    {
-        if (TakeAttribute(tag, name, nullptr))
-        {
-            changed = true;
-        }
-    }
-    if (changed)
-    {
-        html.replace(start, end - start, tag);
-    }
-    return changed;
-}
-
-void InjectWidgetCss(std::string & html, const std::string & css)
-{
-    if (css.empty() || html.find("<style id=\"sciterui-widgets\">") != std::string::npos)
-    {
-        return;
-    }
-    const std::string block = "<style id=\"sciterui-widgets\">" + css + "</style>";
-    const size_t head = html.find("<head");
-    if (head != std::string::npos)
-    {
-        const size_t end = html.find('>', head);
-        if (end != std::string::npos)
-        {
-            html.insert(end + 1, block);
-            return;
-        }
-    }
-    html.insert(0, block);
-}
-#endif
-} // namespace
 
 #ifdef __APPLE__
 void DetachMacOSWindowTerminationObserver(const void * handle);
@@ -255,12 +37,6 @@ SciterWindow::SciterWindow(Sciter & sciter) :
     m_bound(false),
     m_destroyed(false),
     m_parentEnabled(true)
-#if defined(__linux__)
-    ,
-    m_documentMinWidth(0),
-    m_documentMinHeight(0),
-    m_documentResizable(false)
-#endif
 {
 }
 
@@ -270,11 +46,7 @@ SciterWindow::~SciterWindow()
 
 void SciterWindow::Show()
 {
-#if defined(__linux__)
-    X11Host::Instance().Show(*this);
-#else
     ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_SHOWN, 0);
-#endif
 }
 
 bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags)
@@ -291,8 +63,6 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
     DWORD exStyle = childWindow ? (WS_EX_DLGMODALFRAME | WS_EX_TOOLWINDOW) : WS_EX_APPWINDOW;
     DWORD style = childWindow ? (DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS) : (WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
     m_hWnd = CreateWindowEx(exStyle, m_sciter.WindowClass().c_str(), L"", style, x, y, width, height, (HWND)parentWinow, nullptr, GetModuleHandle(nullptr), &m_sciter);
-#elif defined(__linux__)
-    m_hWnd = X11Host::Instance().Create(*this, parentWinow, x, y, width, height, flags, startHidden);
 #else
     RECT Frame{};
     Frame.left = x;
@@ -307,15 +77,13 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
         if (childWindow)
         {
             m_hParent = parentWinow;
-#if !defined(__linux__)
             m_parentState = (int)::SciterWindowExec((SciterHWINDOW)parentWinow, SCITER_WINDOW_GET_STATE, 0, 0);
-#endif
 #ifdef WIN32
             m_parentEnabled = IsWindowEnabled((HWND)parentWinow) != FALSE;
             EnableWindow((HWND)parentWinow, FALSE);
 #endif
         }
-        SciterSetOption(EngineHandle(*this), SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
+        SciterSetOption((SciterHWINDOW)m_hWnd, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
 
         m_sciter.WindowCreated(this);
         if (!LoadHtml(htmlFile))
@@ -325,8 +93,6 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
             {
 #ifdef WIN32
                 DestroyWindow((HWND)m_hWnd);
-#elif defined(__linux__)
-                X11Host::Instance().Abandon(*this);
 #else
                 ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_CLOSED, TRUE);
 #endif
@@ -335,9 +101,6 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
             m_sciter.WindowDestroyed(this);
             return false;
         }
-#if defined(__linux__)
-        ApplyDocumentChrome();
-#endif
         SetDefaultWindowSize(x, y, width, height);
         if (!startHidden)
         {
@@ -389,7 +152,7 @@ void SciterWindow::CenterWindow(void)
 
     SetWindowPos(hwnd, nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);
 #elif defined(__linux__)
-    X11Host::Instance().Center(*this);
+    // Native Wayland toplevel positioning is owned by the compositor.
 #endif
 }
 
@@ -400,9 +163,6 @@ void SciterWindow::FixMinSize()
         return;
     }
 
-#if defined(__linux__)
-    X11Host::Instance().FixMinSize(*this, m_layoutWidth, m_layoutHeight);
-#else
     SciterUpdateWindow((SciterHWINDOW)m_hWnd);
 
 #ifdef WIN32
@@ -432,7 +192,13 @@ void SciterWindow::FixMinSize()
 
     ClampWindowSizeToWorkArea(m_createParent, width, height);
     SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
-#endif
+#elif defined(__linux__)
+    const uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
+    const int width = std::max(m_layoutWidth, static_cast<int>(minWidth));
+    const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
+    SIZE size{width, std::max(m_layoutHeight, static_cast<int>(minHeight))};
+    SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_PLACEMENT, 0,
+                     reinterpret_cast<UINT_PTR>(&size));
 #endif
 }
 
@@ -443,18 +209,18 @@ HWINDOW SciterWindow::GetHandle() const
 
 uint32_t SciterWindow::GetMinWidth() const
 {
-    return SciterGetMinWidth(EngineHandle(*this));
+    return SciterGetMinWidth((SciterHWINDOW)m_hWnd);
 }
 
 uint32_t SciterWindow::GetMinHeight(uint32_t width) const
 {
-    return SciterGetMinHeight(EngineHandle(*this), width);
+    return SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
 }
 
 SCITER_ELEMENT SciterWindow::GetRootElement(void) const
 {
     HELEMENT h = 0;
-    SciterGetRootElement(EngineHandle(*this), &h);
+    SciterGetRootElement((SciterHWINDOW)m_hWnd, &h);
     return h;
 }
 
@@ -527,7 +293,8 @@ bool SciterWindow::Destroy()
 #ifdef WIN32
     return PostMessage(hwnd, WM_CLOSE, 0, 0) != 0;
 #elif defined(__linux__)
-    X11Host::Instance().Close(*this);
+    // Destroy after the current native DOM/timer dispatch has returned.
+    QueueLinuxEngineClose(keepAlive);
 #elif defined(__APPLE__)
     // Closing from a timer or DOM callback must not destroy the native engine
     // while its heartbeat is still traversing the engine's dispatch list.
@@ -557,7 +324,7 @@ void SciterWindow::RunModal()
         }
     }
 #elif defined(__linux__)
-    X11Host::Instance().RunModal(this);
+    while (m_hWnd != nullptr && LinuxEngineLoopIteration()) {}
 #else
     while (m_hWnd != nullptr)
     {
@@ -584,20 +351,16 @@ void SciterWindow::SetDestroyed(void)
 #ifdef __APPLE__
     DetachMacOSWindowTerminationObserver(m_hWnd);
 #endif
+#if !defined(__linux__)
     if (m_hParent != nullptr)
     {
         if (m_hWnd != nullptr)
         {
-#if defined(__linux__)
-            X11Host::Instance().Hide(*this);
-#else
             ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_HIDDEN, 0);
-#endif
         }
 #ifdef WIN32
         EnableWindow((HWND)m_hParent, m_parentEnabled ? TRUE : FALSE);
 #endif
-#if !defined(__linux__)
         if (m_parentEnabled &&
             (m_parentState == SCITER_WINDOW_STATE_SHOWN ||
              m_parentState == SCITER_WINDOW_STATE_MAXIMIZED ||
@@ -606,8 +369,8 @@ void SciterWindow::SetDestroyed(void)
             ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_SET_STATE, (UINT_PTR)m_parentState, 0);
             ::SciterWindowExec((SciterHWINDOW)m_hParent, SCITER_WINDOW_ACTIVATE, TRUE, 0);
         }
-#endif
     }
+#endif
     for (EventSinks::iterator itr = m_eventSinks.begin(); itr != m_eventSinks.end(); itr++)
     {
         EventHandler * handler = itr->Sink.get();
@@ -649,6 +412,16 @@ bool SciterWindow::AttachHandler(SCITER_ELEMENT element, const char * riid, void
     return false;
 }
 
+bool SciterWindow::HasHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr) const
+{
+    if (m_destroyed || riid == nullptr)
+        return false;
+    return std::any_of(m_eventSinks.begin(), m_eventSinks.end(),
+        [=](const RegisteredSink & sink) {
+            return (SCITER_ELEMENT)sink.Element == element && sink.Interface == interfacePtr && sink.riid == riid;
+        });
+}
+
 bool SciterWindow::DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr)
 {
     if (m_destroyed)
@@ -656,8 +429,10 @@ bool SciterWindow::DetachHandler(SCITER_ELEMENT Element, const char * riid, void
         return false;
     }
 
-    RegisteredSink Sink(Element, riid, interfacePtr, nullptr);
-    EventSinks::iterator iter = std::find(m_eventSinks.begin(), m_eventSinks.end(), Sink);
+    EventSinks::iterator iter = std::find_if(m_eventSinks.begin(), m_eventSinks.end(),
+        [=](const RegisteredSink & sink) {
+            return (SCITER_ELEMENT)sink.Element == Element && sink.Interface == interfacePtr && sink.riid == riid;
+        });
     bool result = false;
     if (iter != m_eventSinks.end())
     {
@@ -669,7 +444,10 @@ bool SciterWindow::DetachHandler(SCITER_ELEMENT Element, const char * riid, void
             SCDOM_RESULT r = SciterDetachEventHandler((HELEMENT)Element, (::LPELEMENT_EVENT_PROC)EventProc, handler);
             result = r == SCDOM_OK;
         }
-        m_eventSinks.erase(iter);
+        if (result)
+        {
+            m_eventSinks.erase(iter);
+        }
     }
     return result;
 }
@@ -679,15 +457,74 @@ void SciterWindow::Bind()
     if (m_hWnd && !m_bound)
     {
         m_bound = true;
-        SciterSetCallback(EngineHandle(*this), (LPSciterHostCallback)SciterCallback, this);
+        SciterSetCallback((SciterHWINDOW)m_hWnd, (LPSciterHostCallback)SciterCallback, this);
     }
 }
+
+#if defined(__linux__)
+int sui_callback SciterWindow::LinuxWindowEvent(void * tag, SCITER_ELEMENT /*element*/, uint32_t eventGroup, void * params)
+{
+    if (eventGroup == SUBSCRIPTIONS_REQUEST && params != nullptr)
+    {
+        *static_cast<UINT *>(params) = HANDLE_BEHAVIOR_EVENT;
+        return true;
+    }
+    if (eventGroup == HANDLE_INITIALIZATION)
+    {
+        return true;
+    }
+    if (eventGroup != HANDLE_BEHAVIOR_EVENT || params == nullptr)
+    {
+        return false;
+    }
+    auto * event = static_cast<BEHAVIOR_EVENT_PARAMS *>(params);
+    auto * window = static_cast<SciterWindow *>(tag);
+    if (window == nullptr || event->cmd != CUSTOM || event->name == nullptr ||
+        sui_wcsicmp(event->name, SUI_WSTR("sciterui-close-request")) != 0)
+    {
+        return false;
+    }
+    const auto keepAlive = window->shared_from_this();
+    // Only the queued close may proceed synchronously. User requests first
+    // honor the application's sinks and leave destruction to the engine loop.
+    const bool closing = window->m_destroyed;
+    if (!closing)
+    {
+        window->Destroy();
+    }
+    event->data = sciter::value(closing);
+    return true;
+}
+#endif
 
 bool SciterWindow::LoadHtml(const char * url)
 {
     Bind();
     sui_ustring loadUrl = stdstr_f(sui_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
-    return FALSE != ::SciterLoadFile(EngineHandle(*this), loadUrl.c_str());
+    if (!::SciterLoadFile((SciterHWINDOW)m_hWnd, loadUrl.c_str()))
+    {
+        return false;
+    }
+#if defined(__linux__)
+    if (SciterWindowAttachEventHandler((SciterHWINDOW)m_hWnd,
+            (::LPELEMENT_EVENT_PROC)LinuxWindowEvent, this,
+            HANDLE_BEHAVIOR_EVENT) != SCDOM_OK)
+    {
+        return false;
+    }
+    // Use the documented closerequest cancellation API. Native close events
+    // can run during paint/timer dispatch, before the wrapper may be destroyed.
+    const WCHAR closeHandler[] = u"Window.this.on('closerequest', event => {"
+        u"const request = new Event('sciterui-close-request');"
+        u"request.data = false; Window.this.dispatchEvent(request);"
+        u"if (!request.data) event.preventDefault();"
+        u"});";
+    sciter::value result;
+    return ::SciterEval((SciterHWINDOW)m_hWnd, closeHandler,
+        sizeof(closeHandler) / sizeof(WCHAR) - 1, &result) != FALSE;
+#else
+    return true;
+#endif
 }
 
 bool SciterWindow::GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventProc, uint32_t & subscription)
@@ -778,8 +615,6 @@ void SciterWindow::SetDefaultWindowSize(int x, int y, int width, int height)
     int h = height;
     ScaleWindowSizeForDpi(m_createParent, w, h);
     SetWindowPos((HWND)m_hWnd, nullptr, x, y, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-#elif defined(__linux__)
-    X11Host::Instance().ApplySize(*this, x, y, width, height);
 #endif
 }
 
@@ -797,20 +632,6 @@ int64_t SciterWindow::HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm)
         return OnAttachBehavior((LPSCN_ATTACH_BEHAVIOR)pnm);
     case SC_ENGINE_DESTROYED:
         return OnEngineDestroyed();
-#if defined(__linux__)
-    case SC_INVALIDATE_RECT:
-    {
-        const SCN_INVALIDATE_RECT * invalidated = reinterpret_cast<const SCN_INVALIDATE_RECT *>(pnm);
-        X11Host::Instance().Invalidate(m_hWnd, invalidated->invalidRect.left, invalidated->invalidRect.top, invalidated->invalidRect.right, invalidated->invalidRect.bottom);
-        return 0;
-    }
-    case SC_SET_CURSOR:
-    {
-        const SCN_SET_CURSOR * cursor = reinterpret_cast<const SCN_SET_CURSOR *>(pnm);
-        X11Host::Instance().SetCursor(m_hWnd, cursor->cursorId);
-        return 0;
-    }
-#endif
     }
     return 0;
 }
@@ -838,78 +659,10 @@ int64_t SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
     {
         return LOAD_DISCARD;
     }
-#if defined(__linux__)
-    if (UriEndsWith(pnmld->uri, ".html") || UriEndsWith(pnmld->uri, ".htm"))
-    {
-        std::string html(reinterpret_cast<const char *>(data.get()), dataSize);
-        int minWidth = m_documentMinWidth;
-        int minHeight = m_documentMinHeight;
-        std::string icon;
-        bool resizable = m_documentResizable;
-        if (StripNativeWindowAttributes(html, minWidth, minHeight, icon, resizable))
-        {
-            m_documentMinWidth = minWidth;
-            m_documentMinHeight = minHeight;
-            m_documentResizable = resizable;
-            if (!icon.empty())
-            {
-                m_documentIcon = icon;
-            }
-        }
-        InjectWidgetCss(html, m_sciter.WidgetCss());
-        ::SciterDataReady((SciterHWINDOW)pnmld->hwnd, pnmld->uri, reinterpret_cast<const unsigned char *>(html.data()), static_cast<UINT>(html.size()));
-        return LOAD_OK;
-    }
-#endif
     ::SciterDataReady((SciterHWINDOW)pnmld->hwnd, pnmld->uri, data.get(), dataSize);
     return LOAD_OK;
 }
 
-#if defined(__linux__)
-void SciterWindow::ApplyDocumentChrome()
-{
-    SciterElement root(GetRootElement());
-    if (!root.IsValid())
-    {
-        return;
-    }
-    int minWidth = std::atoi(root.GetAttribute("window-min-width").c_str());
-    int minHeight = std::atoi(root.GetAttribute("window-min-height").c_str());
-    if (minWidth <= 0)
-    {
-        minWidth = m_documentMinWidth;
-    }
-    if (minHeight <= 0)
-    {
-        minHeight = m_documentMinHeight;
-    }
-    if (minWidth > 0 || minHeight > 0)
-    {
-        X11Host::Instance().SetDocumentMinSize(*this, minWidth, minHeight);
-    }
-    X11Host::Instance().SetResizable(*this, m_documentResizable);
-    SciterElement title(root.FindFirst("title"));
-    if (title.IsValid())
-    {
-        std::string text = title.GetHTML(false);
-        const size_t start = text.find_first_not_of(" \t\r\n");
-        const size_t end = text.find_last_not_of(" \t\r\n");
-        if (start != std::string::npos && end != std::string::npos && text.find('<') == std::string::npos)
-        {
-            text = text.substr(start, end - start + 1);
-            X11Host::Instance().SetTitle(*this, text.c_str());
-        }
-    }
-    if (!m_documentIcon.empty())
-    {
-        std::vector<uint8_t> png;
-        if (m_sciter.LoadResource(m_documentIcon.c_str(), png) && !png.empty())
-        {
-            X11Host::Instance().SetIcon(*this, png.data(), static_cast<uint32_t>(png.size()));
-        }
-    }
-}
-#endif
 
 int64_t SciterWindow::OnAttachBehavior(LPSCN_ATTACH_BEHAVIOR pnmld)
 {
@@ -924,8 +677,9 @@ int64_t SciterWindow::OnEngineDestroyed(void)
     if (!m_destroyed)
     {
         m_destroyed = true;
-#if defined(__linux__)
-        X11Host::Instance().Hide(*this);
+#if   defined(__linux__)
+        // SC_ENGINE_DESTROYED arrives after the native engine has gone.
+        // Calling WindowExec here can access an invalid Wayland window.
 #else
         ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_HIDDEN, 0);
 #endif
