@@ -71,17 +71,18 @@ bool Sciter::AttachHandler(SCITER_ELEMENT elemHandle, const char * riid, void * 
 
 bool Sciter::DetachHandler(SCITER_ELEMENT elemHandle, const char * riid, void * pinterface)
 {
-    if (elemHandle == nullptr || pinterface == nullptr)
+    if (elemHandle == nullptr || riid == nullptr || pinterface == nullptr)
     {
         return false;
     }
-    HWINDOW hWnd = SciterElement(elemHandle).GetElementHwnd(true);
-    SciterWindow * window = FindSciterWindow(hWnd);
-    if (window == nullptr)
+    for (SciterWindow * window : m_windows)
     {
-        return false;
+        if (window->HasHandler(elemHandle, riid, pinterface))
+        {
+            return window->DetachHandler(elemHandle, riid, pinterface);
+        }
     }
-    return window->DetachHandler(elemHandle, riid, pinterface);
+    return false;
 }
 
 std::shared_ptr<void> Sciter::GetElementInterface(SCITER_ELEMENT he, const char * riid)

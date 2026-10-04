@@ -6,6 +6,7 @@
 #include <sciter_element.h>
 #include <set>
 #include <string>
+#include <list>
 #include <vector>
 
 namespace SciterUI
@@ -101,9 +102,9 @@ private:
     struct RegisteredSink
     {
         RegisteredSink(SCITER_ELEMENT Element_, const char * riid_, void * Interface_, std::shared_ptr<EventHandler> Sink_) :
+            Sink(std::move(Sink_)),
             Element(Element_),
             Interface(Interface_),
-            Sink(std::move(Sink_)),
             riid(riid_)
         {
         }
@@ -111,19 +112,18 @@ private:
         {
             return (Element == lSink.Element) && (Interface == lSink.Interface) && riid == lSink.riid;
         }
-        // DOM replacement can detach an element before the window is closed.
-        // Keep its handle valid until its registered native handler is removed.
+        std::shared_ptr<EventHandler> Sink;
         SciterElement Element;
         void * Interface;
-        std::shared_ptr<EventHandler> Sink;
         std::string riid;
     };
-    typedef std::vector<RegisteredSink> EventSinks;
+    typedef std::list<RegisteredSink> EventSinks;
 
     void Show();
     bool Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags);
     void SetDestroyed(void);
     bool AttachHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr);
+    bool HasHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr) const;
     bool DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr);
     void Bind();
     bool LoadHtml(const char * url);

@@ -649,6 +649,22 @@ bool SciterWindow::AttachHandler(SCITER_ELEMENT element, const char * riid, void
     return false;
 }
 
+bool SciterWindow::HasHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr) const
+{
+    if (m_destroyed || riid == nullptr)
+    {
+        return false;    
+    }
+    for (const RegisteredSink & sink : m_eventSinks)
+    {
+        if ((SCITER_ELEMENT)sink.Element == element && sink.Interface == interfacePtr && sink.riid == riid)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool SciterWindow::DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr)
 {
     if (m_destroyed)
@@ -656,8 +672,14 @@ bool SciterWindow::DetachHandler(SCITER_ELEMENT Element, const char * riid, void
         return false;
     }
 
-    RegisteredSink Sink(Element, riid, interfacePtr, nullptr);
-    EventSinks::iterator iter = std::find(m_eventSinks.begin(), m_eventSinks.end(), Sink);
+    EventSinks::iterator iter = m_eventSinks.begin();
+    for (; iter != m_eventSinks.end(); ++iter)
+    {
+        if ((SCITER_ELEMENT)iter->Element == Element && iter->Interface == interfacePtr && iter->riid == riid)
+        {
+            break;
+        }
+    }
     bool result = false;
     if (iter != m_eventSinks.end())
     {
@@ -669,7 +691,10 @@ bool SciterWindow::DetachHandler(SCITER_ELEMENT Element, const char * riid, void
             SCDOM_RESULT r = SciterDetachEventHandler((HELEMENT)Element, (::LPELEMENT_EVENT_PROC)EventProc, handler);
             result = r == SCDOM_OK;
         }
-        m_eventSinks.erase(iter);
+        if (result)
+        {
+            m_eventSinks.erase(iter);
+        }
     }
     return result;
 }
@@ -687,7 +712,11 @@ bool SciterWindow::LoadHtml(const char * url)
 {
     Bind();
     sui_ustring loadUrl = stdstr_f(sui_strnicmp(url, "file://", 7) == 0 ? "%s" : "file://%s", url).ToUTF16();
-    return FALSE != ::SciterLoadFile(EngineHandle(*this), loadUrl.c_str());
+    if (!::SciterLoadFile(EngineHandle(*this), loadUrl.c_str()))
+    {
+        return false;
+    }
+    return true;
 }
 
 bool SciterWindow::GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventProc, uint32_t & subscription)
