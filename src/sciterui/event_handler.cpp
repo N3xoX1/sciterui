@@ -22,6 +22,28 @@ EventHandler::EventHandler(Sciter & sciter, SCITER_ELEMENT element, void * inter
 {
 }
 
+std::shared_ptr<EventHandler> EventHandler::RetainForCallback(uint32_t evtg, void * prms)
+{
+    auto keepAlive = shared_from_this();
+    if (evtg == HANDLE_INITIALIZATION && prms != nullptr)
+    {
+        const auto * initialization = static_cast<const INITIALIZATION_PARAMS *>(prms);
+        if (initialization->cmd == BEHAVIOR_ATTACH)
+        {
+            // Sciter keeps a raw tag until BEHAVIOR_DETACH, which may happen
+            // after SC_ENGINE_DESTROYED on a native Cocoa close.
+            m_engineReference = keepAlive;
+        }
+        else if (initialization->cmd == BEHAVIOR_DETACH)
+        {
+            m_engineReference.reset();
+        }
+    }
+    return keepAlive;
+}
+
+// Every trampoline must retain its registration while calling an external
+// sink: a sink can detach itself or close the owning window synchronously.
 int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
     EventHandler * handler = (EventHandler *)tag;
@@ -30,12 +52,12 @@ int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
 
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     IClickSink * clickSink = (IClickSink *)handler->m_Interface;
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
@@ -122,12 +144,12 @@ int EventHandler::DoubleClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evt
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
 
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     IDoubleClickSink * clickSink = (IDoubleClickSink *)handler->m_Interface;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
@@ -155,11 +177,11 @@ int EventHandler::TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     ITimerSink * TimerSink = handler != nullptr ? (ITimerSink *)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
@@ -187,11 +209,11 @@ int EventHandler::MousedUpDownHandler(void * tag, SCITER_ELEMENT he, uint32_t ev
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     IMouseUpDownSink * mouseUpDownSink = (IMouseUpDownSink *)handler->m_Interface;
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
@@ -222,11 +244,11 @@ int EventHandler::ContextMenuHandler(void * tag, SCITER_ELEMENT he, uint32_t evt
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         *static_cast<uint32_t *>(prms) = handler->m_Subscription;
@@ -270,11 +292,11 @@ int EventHandler::MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     IMouseMoveSink * mouseMoveSink = (IMouseMoveSink *)handler->m_Interface;
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
@@ -301,11 +323,11 @@ int EventHandler::KeyHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void 
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;
@@ -340,11 +362,11 @@ int EventHandler::ResizeHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, vo
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;
@@ -371,11 +393,11 @@ int EventHandler::ForwardBehaviorHandler(void * tag, SCITER_ELEMENT he, uint32_t
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;
@@ -411,11 +433,11 @@ int EventHandler::StateChangeHandler(void * tag, SCITER_ELEMENT he, uint32_t evt
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;
@@ -445,11 +467,11 @@ int EventHandler::EventSinkHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg,
         return false;
     }
 
+    const auto keepAlive = handler->RetainForCallback(evtg, prms);
     if (evtg == HANDLE_INITIALIZATION)
     {
         return true;
     }
-    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;

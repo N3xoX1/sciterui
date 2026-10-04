@@ -122,6 +122,7 @@ private:
     void Show();
     bool Create(HWINDOW parentWinow, const char * htmlFile, int x, int y, int width, int height, unsigned int flags);
     void SetDestroyed(void);
+    void DetachEventHandlers();
     bool AttachHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr);
     bool HasHandler(SCITER_ELEMENT element, const char * riid, void * interfacePtr) const;
     bool DetachHandler(SCITER_ELEMENT Element, const char * riid, void * interfacePtr);

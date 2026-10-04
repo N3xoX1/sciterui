@@ -26,6 +26,9 @@ public:
     static int sui_callback EventSinkHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms);
 
 private:
+    std::shared_ptr<EventHandler> RetainForCallback(uint32_t evtg, void * prms);
+    std::shared_ptr<EventHandler> m_engineReference;
+
     EventHandler() = delete;
     EventHandler(const EventHandler &) = delete;
     EventHandler & operator=(const EventHandler &) = delete;
