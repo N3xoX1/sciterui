@@ -6,8 +6,8 @@
 
 #include <value.h>
 
-#include <sciter-x-behavior.h>
 #include <sciter-x-api.h>
+#include <sciter-x-behavior.h>
 
 namespace SciterUI
 {
@@ -22,22 +22,25 @@ EventHandler::EventHandler(Sciter & sciter, SCITER_ELEMENT element, void * inter
 {
 }
 
-// Every trampoline must retain its registration while calling an external
-// sink: a sink can detach itself or close the owning window synchronously.
 int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
     EventHandler * handler = (EventHandler *)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    IClickSink * clickSink = handler != nullptr ? (IClickSink *)handler->m_Interface : nullptr;
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    if (handler == nullptr)
+    {
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
+        return true;
+    }
+
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    IClickSink * clickSink = (IClickSink *)handler->m_Interface;
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;
         *p = handler->m_Subscription;
-        return true;
-    }
-    else if (evtg == HANDLE_INITIALIZATION)
-    {
         return true;
     }
     if (evtg == HANDLE_BEHAVIOR_EVENT && clickSink)
@@ -111,25 +114,30 @@ int EventHandler::ClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
     return false;
 }
 
-int EventHandler::DoubleClickHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::DoubleClickHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler * handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    IDoubleClickSink * clickSink = handler != nullptr ? (IDoubleClickSink*)handler->m_Interface : nullptr;
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    IDoubleClickSink * clickSink = (IDoubleClickSink *)handler->m_Interface;
+    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     if (evtg == HANDLE_MOUSE && clickSink)
     {
-        MOUSE_PARAMS* p = (MOUSE_PARAMS*)prms;
+        MOUSE_PARAMS * p = (MOUSE_PARAMS *)prms;
         const uint32_t event = p->cmd & ~(uint32_t)SINKING & ~(uint32_t)HANDLED;
         if (event == MOUSE_DCLICK)
         {
@@ -141,13 +149,21 @@ int EventHandler::DoubleClickHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg
 
 int EventHandler::TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler * handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    ITimerSink* TimerSink = handler != nullptr ? (ITimerSink*)handler->m_Interface : nullptr;
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
+    {
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
+        return true;
+    }
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    ITimerSink * TimerSink = handler != nullptr ? (ITimerSink *)handler->m_Interface : nullptr;
     if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
     {
-        UINT* p = (UINT*)prms;
+        UINT * p = (UINT *)prms;
         *p = handler->m_Subscription;
         return true;
     }
@@ -157,31 +173,35 @@ int EventHandler::TimerHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, voi
     }
     if (evtg == HANDLE_TIMER)
     {
-        TIMER_PARAMS* p = (TIMER_PARAMS*)prms;
-        return TimerSink->OnTimer(he, (uint32_t*)p->timerId);
+        TIMER_PARAMS * p = (TIMER_PARAMS *)prms;
+        return TimerSink->OnTimer(he, (uint32_t *)p->timerId);
     }
     return false;
 }
 
-int EventHandler::MousedUpDownHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::MousedUpDownHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler * handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    IMouseUpDownSink * mouseUpDownSink = handler != nullptr ? (IMouseUpDownSink*)handler->m_Interface : nullptr;
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    IMouseUpDownSink * mouseUpDownSink = (IMouseUpDownSink *)handler->m_Interface;
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     else if (evtg == HANDLE_MOUSE && mouseUpDownSink)
     {
-        MOUSE_PARAMS * p = (MOUSE_PARAMS*)prms;
+        MOUSE_PARAMS * p = (MOUSE_PARAMS *)prms;
         if (p->cmd == MOUSE_DOWN || p->cmd == ((uint32_t)MOUSE_DOWN | (uint32_t)SINKING))
         {
             return mouseUpDownSink->OnMouseDown(he, p->target, p->pos.x, p->pos.y);
@@ -196,56 +216,70 @@ int EventHandler::MousedUpDownHandler(void* tag, SCITER_ELEMENT he, uint32_t evt
 
 int EventHandler::ContextMenuHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    auto * handler = static_cast<EventHandler *>(tag);
-    if (handler == nullptr) return false;
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
+    {
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
+        return true;
+    }
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         *static_cast<uint32_t *>(prms) = handler->m_Subscription;
         return true;
     }
-    if (evtg != HANDLE_MOUSE) return false;
-    // A native context menu runs a tracking loop. Closing its owner can detach
-    // this handler before OnContextMenu returns.
-    const auto keepAlive = handler->shared_from_this();
-    auto * mouse = static_cast<MOUSE_PARAMS *>(prms);
-    // Capture the press before the implicit context-menu path runs. On release
-    // button_state may already be zero, so do not infer the clicked button then.
-    if (mouse->cmd == (MOUSE_UP | SINKING) && handler->m_MouseDown)
+    else if (evtg == HANDLE_MOUSE)
     {
-        handler->m_MouseDown = false;
-        return true;
-    }
-    bool contextPress = mouse->button_state == PROP_MOUSE_BUTTON;
+        MOUSE_PARAMS * p = (MOUSE_PARAMS *)prms;
+        if (p->cmd == ((uint32_t)MOUSE_UP | (uint32_t)SINKING) && handler->m_MouseDown)
+        {
+            handler->m_MouseDown = false;
+            return true;
+        }
+        bool contextPress = p->button_state == PROP_MOUSE_BUTTON;
 #ifdef __APPLE__
-    contextPress = contextPress || (mouse->button_state == MAIN_MOUSE_BUTTON &&
-                                   (mouse->alt_state & KEYBOARD_STATE_CONTROL) != 0);
+        contextPress = contextPress || (p->button_state == MAIN_MOUSE_BUTTON && (p->alt_state & KEYBOARD_STATE_CONTROL) != 0);
 #endif
-    if (mouse->cmd != (MOUSE_DOWN | SINKING)) return false;
-    handler->m_MouseDown = false;
-    if (!contextPress) return false;
-    auto * sink = static_cast<IContextMenuSink *>(handler->m_Interface);
-    Sciter::ContextMenuScope context(handler->m_Sciter, mouse->target);
-    const bool handled = sink && sink->OnContextMenu(he, mouse->target, mouse->pos_view.x, mouse->pos_view.y);
-    // Cocoa already consumed the release in its synchronous tracking loop.
-    // Only the asynchronous Sciter popup needs its opening release swallowed.
-    handler->m_MouseDown = handled && !context.nativeShown;
-    return handled;
+        if (p->cmd != ((uint32_t)MOUSE_DOWN | (uint32_t)SINKING))
+        {
+            return false;
+        }
+        handler->m_MouseDown = false;
+        if (!contextPress)
+        {
+            return false;
+        }
+        IContextMenuSink * sink = (IContextMenuSink *)handler->m_Interface;
+        Sciter::ContextMenuScope context(handler->m_Sciter, p->target);
+        const bool handled = sink && sink->OnContextMenu(he, p->target, p->pos_view.x, p->pos_view.y);
+        handler->m_MouseDown = handled && !context.nativeShown;
+        return handled;
+    }
+    return false;
 }
 
 int EventHandler::MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler * handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    IMouseMoveSink * mouseMoveSink = handler != nullptr ? (IMouseMoveSink*)handler->m_Interface : nullptr;
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    IMouseMoveSink * mouseMoveSink = (IMouseMoveSink *)handler->m_Interface;
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     else if (evtg == HANDLE_MOUSE && mouseMoveSink)
@@ -259,25 +293,29 @@ int EventHandler::MousedMoveHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg
     return false;
 }
 
-int EventHandler::KeyHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::KeyHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
     EventHandler * handler = (EventHandler *)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    if (handler == nullptr)
+    {
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
+        return true;
+    }
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
         uint32_t * p = (uint32_t *)prms;
         *p = handler->m_Subscription;
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
-    {
-        return true;
-    }
     else if (evtg == HANDLE_KEY)
     {
-        IKeySink * keySink = handler != nullptr ? (IKeySink*)handler->m_Interface : nullptr;
-        KEY_PARAMS * p = (KEY_PARAMS*)prms;
+        IKeySink * keySink = handler != nullptr ? (IKeySink *)handler->m_Interface : nullptr;
+        KEY_PARAMS * p = (KEY_PARAMS *)prms;
         if (p->cmd == KEY_DOWN)
         {
             return keySink->OnKeyDown(he, p->target, (SciterKeys)p->key_code, p->alt_state);
@@ -294,19 +332,23 @@ int EventHandler::KeyHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* 
     return false;
 }
 
-int EventHandler::ResizeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::ResizeHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler* handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     else if (evtg == HANDLE_SIZE)
@@ -321,24 +363,28 @@ int EventHandler::ResizeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, voi
     return false;
 }
 
-int EventHandler::ForwardBehaviorHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::ForwardBehaviorHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler* handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     else if (evtg == HANDLE_BEHAVIOR_EVENT)
     {
-        BEHAVIOR_EVENT_PARAMS * p = (BEHAVIOR_EVENT_PARAMS*)prms;
+        BEHAVIOR_EVENT_PARAMS * p = (BEHAVIOR_EVENT_PARAMS *)prms;
         if ((p->cmd & (SINKING | HANDLED)) == 0)
         {
             BEHAVIOR_EVENT_PARAMS params = {};
@@ -349,34 +395,39 @@ int EventHandler::ForwardBehaviorHandler(void* tag, SCITER_ELEMENT he, uint32_t 
             params.data = p->data;
             SBOOL handled = false;
             SCDOM_RESULT r = SciterFireEvent(&params, false, &handled);
-            assert(r == SCDOM_OK); (void)r;
+            assert(r == SCDOM_OK);
+            (void)r;
             return handled != 0;
         }
     }
     return false;
 }
 
-int EventHandler::StateChangeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::StateChangeHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler* handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     else if (evtg == HANDLE_BEHAVIOR_EVENT)
     {
-        BEHAVIOR_EVENT_PARAMS* p = (BEHAVIOR_EVENT_PARAMS*)prms;
+        BEHAVIOR_EVENT_PARAMS * p = (BEHAVIOR_EVENT_PARAMS *)prms;
         if (p->cmd == VALUE_CHANGED)
         {
-            IStateChangeSink * stateChangeSink = handler != nullptr ? (IStateChangeSink*)handler->m_Interface : nullptr;
+            IStateChangeSink * stateChangeSink = handler != nullptr ? (IStateChangeSink *)handler->m_Interface : nullptr;
             if (stateChangeSink)
             {
                 return stateChangeSink->OnStateChange(he, evtg, prms);
@@ -386,27 +437,31 @@ int EventHandler::StateChangeHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg
     return false;
 }
 
-int EventHandler::EventSinkHandler(void* tag, SCITER_ELEMENT he, uint32_t evtg, void* prms)
+int EventHandler::EventSinkHandler(void * tag, SCITER_ELEMENT he, uint32_t evtg, void * prms)
 {
-    EventHandler* handler = (EventHandler*)tag;
-    if (handler == nullptr) return false;
-    const auto keepAlive = handler->shared_from_this();
-    if (evtg == SUBSCRIPTIONS_REQUEST && handler != nullptr)
+    EventHandler * handler = (EventHandler *)tag;
+    if (handler == nullptr)
     {
-        uint32_t* p = (uint32_t*)prms;
-        *p = handler->m_Subscription;
+        return false;
+    }
+
+    if (evtg == HANDLE_INITIALIZATION)
+    {
         return true;
     }
-    else if (evtg == HANDLE_INITIALIZATION)
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
+    if (evtg == SUBSCRIPTIONS_REQUEST)
     {
+        uint32_t * p = (uint32_t *)prms;
+        *p = handler->m_Subscription;
         return true;
     }
     else if (evtg == HANDLE_BEHAVIOR_EVENT)
     {
-        BEHAVIOR_EVENT_PARAMS* p = (BEHAVIOR_EVENT_PARAMS*)prms;
+        BEHAVIOR_EVENT_PARAMS * p = (BEHAVIOR_EVENT_PARAMS *)prms;
         if ((p->cmd & (SINKING | HANDLED)) == 0)
         {
-            IEventSink * eventSink = handler != nullptr ? (IEventSink*)handler->m_Interface : nullptr;
+            IEventSink * eventSink = handler != nullptr ? (IEventSink *)handler->m_Interface : nullptr;
             if (eventSink)
             {
                 return eventSink->OnEvent(p->he, p->heTarget, p->cmd, p->reason);
