@@ -811,7 +811,7 @@ void WidgetMenuBar::ShowTopMenu(SciterElement topItem)
 
 void WidgetMenuBar::ShowSubMenu(SciterElement item)
 {
-    if (!item.IsValid())
+    if (!item.IsValid() || m_suppressPopupDismiss)
     {
         return;
     }
@@ -940,7 +940,7 @@ bool WidgetMenuBar::OnEvent(SCITER_ELEMENT /*element*/, SCITER_ELEMENT source, u
 
 bool WidgetMenuBar::OnMouseMove(SCITER_ELEMENT element, SCITER_ELEMENT source, uint32_t x, uint32_t y)
 {
-    if (!m_menuActive)
+    if (!m_menuActive || m_suppressPopupDismiss)
     {
         return false;
     }
