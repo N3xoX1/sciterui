@@ -10,4 +10,4 @@ using SciterHWINDOW = HWINDOW;
 }
 
 #undef HWINDOW
-#define HWINDOW const void *
+typedef const void * HWINDOW;

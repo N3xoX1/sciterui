@@ -87,6 +87,9 @@
     <ClCompile Include="sciter_dpi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="linux_engine_loop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sciter.h">
@@ -156,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sciter_dpi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="linux_engine_loop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

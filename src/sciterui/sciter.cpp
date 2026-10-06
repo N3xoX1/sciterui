@@ -9,7 +9,9 @@
 #include "sciter_window_macos.h"
 #endif
 #if defined(__linux__)
-#include "x11_host.h"
+#include <cstdlib>
+#include <cstdio>
+#include "linux_engine_loop.h"
 #endif
 
 namespace SciterUI
@@ -33,25 +35,21 @@ bool Sciter::Initialize(const char * baseLanguage, const char * currentLanguage,
         return false;
     }
 #if defined(__linux__)
-    if (!X11Host::Instance().Init())
+    if (std::getenv("WAYLAND_DISPLAY") == nullptr &&
+        std::getenv("WAYLAND_SOCKET") == nullptr)
     {
+        std::fprintf(stderr, "SciterUI: a native Wayland session is required on Linux\n");
         return false;
     }
-#else
-    SciterExec(SCITER_APP_INIT, (UINT_PTR)0, (UINT_PTR) nullptr);
 #endif
+    SciterExec(SCITER_APP_INIT, (UINT_PTR)0, (UINT_PTR) nullptr);
     SciterSetOption(NULL, SCITER_SET_SCRIPT_RUNTIME_FEATURES, ALLOW_FILE_IO | ALLOW_SOCKET_IO | ALLOW_EVAL | ALLOW_SYSINFO);
     return true;
 }
 
 void Sciter::UpdateWindow(HWINDOW hwnd)
 {
-#if defined(__linux__)
-    SciterWindow * window = FindSciterWindow(hwnd);
-    X11Host::Instance().Invalidate(window != nullptr ? window->GetHandle() : hwnd, 0, 0, 0, 0);
-#else
     SciterUpdateWindow((SciterHWINDOW)hwnd);
-#endif
 }
 
 bool Sciter::AttachHandler(SCITER_ELEMENT elemHandle, const char * riid, void * pinterface)
@@ -134,11 +132,7 @@ SciterWindow * Sciter::FindSciterWindow(HWINDOW hwnd) const
     for (WindowSet::const_iterator itr = m_windows.begin(); itr != m_windows.end(); itr++)
     {
         SciterWindow * window = *itr;
-#if defined(__linux__)
-        if (window->GetHandle() == hwnd || (HWINDOW)window == hwnd)
-#else
         if (window->GetHandle() == hwnd)
-#endif
         {
             return window;
         }
@@ -285,7 +279,7 @@ uint32_t Sciter::AttachWidget(LPSCN_ATTACH_BEHAVIOR lpab)
 void Sciter::Run()
 {
 #if defined(__linux__)
-    X11Host::Instance().Run();
+    while (LinuxEngineLoopIteration()) {}
 #else
     SciterExec(SCITER_APP_LOOP, 0, 0);
 #endif
@@ -293,20 +287,15 @@ void Sciter::Run()
 
 void Sciter::Stop()
 {
-#if defined(__linux__)
-    X11Host::Instance().Stop();
-#else
     SciterExec(SCITER_APP_STOP, 0, 0);
-#endif
 }
 
 void Sciter::Shutdown()
 {
 #if defined(__linux__)
-    X11Host::Instance().Shutdown();
-#else
-    SciterExec(SCITER_APP_SHUTDOWN, 0, 0);
+    FlushLinuxEngineCloses();
 #endif
+    SciterExec(SCITER_APP_SHUTDOWN, 0, 0);
 #ifdef __APPLE__
     RemoveMacOSApplicationTerminationHandler();
 #endif

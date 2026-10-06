@@ -31,6 +31,7 @@
     <ClCompile Include="base_element.cpp" />
     <ClCompile Include="event_handler.cpp" />
     <ClCompile Include="file.cpp" />
+    <ClCompile Include="linux_engine_loop.cpp" />
     <ClCompile Include="module_disk.cpp" />
     <ClCompile Include="module_resource.cpp" />
     <ClCompile Include="path.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="base_element.h" />
     <ClInclude Include="event_handler.h" />
     <ClInclude Include="file.h" />
+    <ClInclude Include="linux_engine_loop.h" />
     <ClInclude Include="module_disk.h" />
     <ClInclude Include="module_resource.h" />
     <ClInclude Include="path.h" />
