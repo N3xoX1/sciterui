@@ -12,9 +12,6 @@
 namespace SciterUI
 {
 class Sciter;
-#if defined(__linux__)
-class X11Host;
-#endif
 
 class SciterWindow :
     public ISciterWindow,
@@ -90,9 +87,6 @@ public:
     bool IsClosed() const override;
 
     friend class Sciter;
-#if defined(__linux__)
-    friend class X11Host;
-#endif
 
 private:
     SciterWindow(void) = delete;
@@ -130,7 +124,7 @@ private:
     bool GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventProc, uint32_t & subscription);
     void SetDefaultWindowSize(int x, int y, int width, int height);
 #if defined(__linux__)
-    void ApplyDocumentChrome();
+    static int sui_callback LinuxWindowEvent(void * tag, SCITER_ELEMENT element, uint32_t eventGroup, void * params);
 #endif
     int64_t HandleNotification(LPSCITER_CALLBACK_NOTIFICATION pnm);
     int64_t OnLoadData(LPSCN_LOAD_DATA pnmld);
@@ -154,10 +148,7 @@ private:
     bool m_destroyed;
     bool m_parentEnabled;
 #if defined(__linux__)
-    int m_documentMinWidth;
-    int m_documentMinHeight;
-    bool m_documentResizable;
-    std::string m_documentIcon;
+    std::string m_applicationId;
 #endif
 };
 
