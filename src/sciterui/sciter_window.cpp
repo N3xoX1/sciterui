@@ -606,57 +606,57 @@ bool SciterWindow::GetEventProc(const char * riid, LPELEMENT_EVENT_PROC & eventP
 {
     if (strcmp(IID_ICLICKSINK, riid) == 0)
     {
-        eventProc = &EventHandler::ClickHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnClick>;
         subscription = HANDLE_MOUSE | HANDLE_BEHAVIOR_EVENT;
     }
     else if (strcmp(IID_IDBLCLICKSINK, riid) == 0)
     {
-        eventProc = &EventHandler::DoubleClickHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnDoubleClick>;
         subscription = HANDLE_MOUSE;
     }
     else if (strcmp(IID_ITIMERSINK, riid) == 0)
     {
-        eventProc = &EventHandler::TimerHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnTimer>;
         subscription = HANDLE_TIMER;
     }
     else if (strcmp(IID_IMOUSEUPDOWNSINK, riid) == 0)
     {
-        eventProc = &EventHandler::MousedUpDownHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnMouseUpDown>;
         subscription = HANDLE_MOUSE;
     }
     else if (strcmp(IID_ICONTEXTMENUSINK, riid) == 0)
     {
-        eventProc = &EventHandler::ContextMenuHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnContextMenu>;
         subscription = HANDLE_MOUSE;
     }
     else if (strcmp(IID_IMOUSEMOVESINK, riid) == 0)
     {
-        eventProc = &EventHandler::MousedMoveHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnMouseMove>;
         subscription = HANDLE_MOUSE;
     }
     else if (strcmp(IID_IKEYSINK, riid) == 0)
     {
-        eventProc = &EventHandler::KeyHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnKey>;
         subscription = HANDLE_KEY;
     }
     else if (strcmp(IID_IRESIZESINK, riid) == 0)
     {
-        eventProc = &EventHandler::ResizeHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnResize>;
         subscription = HANDLE_SIZE;
     }
     else if (strcmp(IID_FORWARD_BEHAVIOUR, riid) == 0)
     {
-        eventProc = &EventHandler::ForwardBehaviorHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnForwardBehavior>;
         subscription = HANDLE_BEHAVIOR_EVENT;
     }
     else if (strcmp(IID_ISTATECHANGESINK, riid) == 0)
     {
-        eventProc = &EventHandler::StateChangeHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnStateChange>;
         subscription = HANDLE_BEHAVIOR_EVENT;
     }
     else if (strcmp(IID_EVENTSINK, riid) == 0)
     {
-        eventProc = &EventHandler::EventSinkHandler;
+        eventProc = &EventHandler::Dispatch<&EventHandler::OnEventSink>;
         subscription = HANDLE_BEHAVIOR_EVENT;
     }
     else
