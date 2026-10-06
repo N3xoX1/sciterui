@@ -7,9 +7,12 @@ namespace SciterUI
 {
 
 class Sciter;
+class SciterWindow;
 
 class EventHandler : public std::enable_shared_from_this<EventHandler>
 {
+    friend class SciterWindow;
+
 public:
     EventHandler(Sciter & sciter, SCITER_ELEMENT element, void * interfacePtr, uint32_t subscription);
 

@@ -52,6 +52,7 @@ int sui_callback EventHandler::Dispatch(void * tag, SCITER_ELEMENT he, uint32_t 
         *(uint32_t *)prms = handler->m_Subscription;
         return true;
     }
+    const std::shared_ptr<EventHandler> keepAlive = handler->shared_from_this();
     return (handler->*Fn)(he, evtg, prms);
 }
 
