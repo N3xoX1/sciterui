@@ -205,7 +205,7 @@ void SciterWindow::FixMinSize()
 
     ClampWindowSizeToWorkArea(m_createParent, width, height);
     SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
     UINT ppiX = 96, ppiY = 96;
     SciterGetPPI((SciterHWINDOW)m_hWnd, &ppiX, &ppiY);
     const double scaleX = ppiX ? ppiX / 96.0 : 1.0;
@@ -219,8 +219,6 @@ void SciterWindow::FixMinSize()
     HELEMENT root = nullptr;
     int frameWidth = 0;
     int frameHeight = 0;
-    // Placement includes native shadows; intrinsic dimensions describe the
-    // document. Measure the insets instead of assuming a theme or DPI scale.
     if (SciterGetRootElement((SciterHWINDOW)m_hWnd, &root) == SCDOM_OK &&
         SciterGetElementLocation(root, &rootBox, VIEW_RELATIVE | BORDER_BOX) == SCDOM_OK)
     {
@@ -255,14 +253,19 @@ void SciterWindow::FixMinSize()
     }
     // A different width changes text wrapping; use the intrinsic height for it.
     if (std::abs(width - (rootBox.right - rootBox.left)) > 1)
+    {
         contentHeight = 0;
+    }
     const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
     SIZE size{width + frameWidth, std::max({layoutHeight, static_cast<int>(minHeight), contentHeight}) + frameHeight};
     if (size.cx != placement.cx || size.cy != placement.cy)
     {
-        SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_PLACEMENT, 0,
-                         reinterpret_cast<UINT_PTR>(&size));
+        SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_PLACEMENT, 0,(UINT_PTR)&size);
+#if defined(__linux__)
         SciterElement(root).Eval("Window.this.update()");
+#else
+        SciterUpdateWindow((SciterHWINDOW)m_hWnd);
+#endif
     }
 #endif
 }
@@ -436,6 +439,11 @@ void SciterWindow::SetDestroyed(void)
         }
     }
 #endif
+    DetachEventHandlers();
+}
+
+void SciterWindow::DetachEventHandlers()
+{
     for (EventSinks::iterator itr = m_eventSinks.begin(); itr != m_eventSinks.end(); itr++)
     {
         EventHandler * handler = itr->Sink.get();
@@ -717,12 +725,7 @@ int64_t SciterWindow::OnLoadData(LPSCN_LOAD_DATA pnmld)
     {
         return LOAD_DISCARD;
     }
-    if (pnmld->uri &&
-        pnmld->uri[0] == u'd' &&
-        pnmld->uri[1] == u'a' &&
-        pnmld->uri[2] == u't' &&
-        pnmld->uri[3] == u'a' &&
-        pnmld->uri[4] == u':')
+    if (pnmld->uri && (sui_wcsnicmp(pnmld->uri, SUI_WSTR("data:"), 5) == 0 || sui_wcsnicmp(pnmld->uri, SUI_WSTR("sciter:"), 7) == 0))
     {
         return LOAD_OK;
     }
@@ -765,7 +768,7 @@ int64_t SciterWindow::OnEngineDestroyed(void)
         }
 #endif
     }
-    m_eventSinks.clear();
+    DetachEventHandlers();
     m_onCloseSink.clear();
 
     WinDestroySinks sinks = m_onDestroySink;
