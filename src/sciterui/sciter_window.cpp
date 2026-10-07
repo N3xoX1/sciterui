@@ -197,11 +197,11 @@ void SciterWindow::FixMinSize()
     }
 
     const uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
-    const uint32_t widthForHeight = scaledLayoutWidth > 0 ? static_cast<uint32_t>(scaledLayoutWidth) : minWidth;
+    const uint32_t widthForHeight = scaledLayoutWidth > 0 ? (uint32_t)scaledLayoutWidth : minWidth;
     const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, widthForHeight);
 
-    int width = static_cast<int>(scaledLayoutWidth > 0 ? std::max(minWidth, static_cast<uint32_t>(scaledLayoutWidth)) : minWidth);
-    int height = static_cast<int>(scaledLayoutHeight > 0 ? std::max(minHeight, static_cast<uint32_t>(scaledLayoutHeight)) : minHeight);
+    int width = (int)(scaledLayoutWidth > 0 ? std::max(minWidth, (uint32_t)scaledLayoutWidth) : minWidth);
+    int height = (int)(scaledLayoutHeight > 0 ? std::max(minHeight, (uint32_t)scaledLayoutHeight) : minHeight);
 
     ClampWindowSizeToWorkArea(m_createParent, width, height);
     SetWindowPos((HWND)m_hWnd, nullptr, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOZORDER);
@@ -210,8 +210,8 @@ void SciterWindow::FixMinSize()
     SciterGetPPI((SciterHWINDOW)m_hWnd, &ppiX, &ppiY);
     const double scaleX = ppiX ? ppiX / 96.0 : 1.0;
     const double scaleY = ppiY ? ppiY / 96.0 : 1.0;
-    const int layoutWidth = static_cast<int>(std::ceil(std::max(0, m_layoutWidth) * scaleX));
-    const int layoutHeight = static_cast<int>(std::ceil(std::max(0, m_layoutHeight) * scaleY));
+    const int layoutWidth = (int)std::ceil(std::max(0, m_layoutWidth) * scaleX);
+    const int layoutHeight = (int)std::ceil(std::max(0, m_layoutHeight) * scaleY);
     SIZE placement{};
     SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_GET_PLACEMENT, 0,
                      reinterpret_cast<UINT_PTR>(&placement));
@@ -226,16 +226,16 @@ void SciterWindow::FixMinSize()
         frameHeight = std::max(0, placement.cy - (rootBox.bottom - rootBox.top));
     }
     const uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
-    int width = std::max(layoutWidth, static_cast<int>(minWidth));
-    int contentHeight = 0;
+    const int usedWidth = std::max(0, rootBox.right - rootBox.left);
+    const int usedHeight = std::max(0, rootBox.bottom - rootBox.top);
+    int width = std::max({layoutWidth, (int)minWidth, usedWidth});
+    int contentHeight = usedHeight;
     RECT contentBox{};
     UINT childCount = 0;
     if (root != nullptr &&
         SciterGetElementLocation(root, &contentBox, VIEW_RELATIVE | CONTENT_BOX) == SCDOM_OK &&
         SciterGetChildrenCount(root, &childCount) == SCDOM_OK)
     {
-        // Intrinsic dimensions may still describe the previous page. Include
-        // overflow of the current visible content without retaining unused space.
         for (UINT i = 0; i < childCount; ++i)
         {
             HELEMENT child = nullptr;
@@ -245,19 +245,12 @@ void SciterWindow::FixMinSize()
                 SciterIsElementVisible(child, &visible) != SCDOM_OK || !visible ||
                 SciterGetElementLocation(child, &box, VIEW_RELATIVE | MARGIN_BOX) != SCDOM_OK)
                 continue;
-            if (box.right > rootBox.right)
-                width = std::max(width, box.right - rootBox.left + rootBox.right - contentBox.right);
-            if (box.bottom > rootBox.bottom)
-                contentHeight = std::max(contentHeight, box.bottom - rootBox.top + rootBox.bottom - contentBox.bottom);
+            width = std::max(width, box.right - rootBox.left + rootBox.right - contentBox.right);
+            contentHeight = std::max(contentHeight, box.bottom - rootBox.top + rootBox.bottom - contentBox.bottom);
         }
     }
-    // A different width changes text wrapping; use the intrinsic height for it.
-    if (std::abs(width - (rootBox.right - rootBox.left)) > 1)
-    {
-        contentHeight = 0;
-    }
     const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
-    SIZE size{width + frameWidth, std::max({layoutHeight, static_cast<int>(minHeight), contentHeight}) + frameHeight};
+    SIZE size{width + frameWidth, std::max({layoutHeight, (int)minHeight, contentHeight}) + frameHeight};
     if (size.cx != placement.cx || size.cy != placement.cy)
     {
         SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_PLACEMENT, 0,(UINT_PTR)&size);
