@@ -23,6 +23,64 @@
 namespace SciterUI
 {
 
+#if defined(__linux__) || defined(__APPLE__)
+namespace
+{
+
+void ApplyWindowSize(SciterHWINDOW hwnd, HELEMENT root, const SIZE & size)
+{
+    SciterWindowExec(hwnd, SCITER_WINDOW_SET_PLACEMENT, 0, (UINT_PTR)&size);
+#if defined(__linux__)
+    if (root != nullptr)
+	{
+        SciterElement(root).Eval("Window.this.update()");
+    }
+#else
+    (void)root;
+    SciterUpdateWindow(hwnd);
+#endif
+}
+
+void MeasureContentExtents(HELEMENT parent, const RECT & rootBox, const RECT & rootContent,
+                           int canvasWidth, int canvasHeight, int & width, int & contentHeight)
+{
+    UINT childCount = 0;
+    RECT parentContent{};
+    if (parent == nullptr || SciterGetChildrenCount(parent, &childCount) != SCDOM_OK || SciterGetElementLocation(parent, &parentContent, VIEW_RELATIVE | CONTENT_BOX) != SCDOM_OK)
+    {
+        return;
+    }
+    const int parentWidth = std::max(0, parentContent.right - parentContent.left);
+    const int parentHeight = std::max(0, parentContent.bottom - parentContent.top);
+    for (UINT i = 0; i < childCount; ++i)
+    {
+        HELEMENT child = nullptr;
+        SBOOL visible = FALSE;
+        RECT box{};
+        if (SciterGetNthChild(parent, i, &child) != SCDOM_OK || SciterIsElementVisible(child, &visible) != SCDOM_OK || !visible || SciterGetElementLocation(child, &box, VIEW_RELATIVE | MARGIN_BOX) != SCDOM_OK)
+        {
+            continue;
+        }
+        const int childWidth = box.right - box.left;
+        const int childHeight = box.bottom - box.top;
+        const bool fillsWidth = (parentWidth > 0 && childWidth >= parentWidth - 1) || (canvasWidth > 0 && childWidth * 5 >= canvasWidth * 4);
+        const bool fillsHeight = (parentHeight > 0 && childHeight >= parentHeight - 1) || (canvasHeight > 0 && childHeight * 5 >= canvasHeight * 4);
+        if (!fillsWidth)
+        {
+            width = std::max(width, box.right - rootBox.left + rootBox.right - rootContent.right);
+        }
+        if (!fillsHeight)
+        {
+            contentHeight = std::max(contentHeight, box.bottom - rootBox.top + rootBox.bottom - rootContent.bottom);
+        }
+        MeasureContentExtents(child, rootBox, rootContent, canvasWidth, canvasHeight, width, contentHeight);
+    }
+}
+
+} // namespace
+#endif
+
+
 #ifdef __APPLE__
 void DetachMacOSWindowTerminationObserver(const void * handle);
 void ScheduleMacOSWindowClose(std::shared_ptr<SciterWindow> window);
@@ -72,10 +130,10 @@ bool SciterWindow::Create(HWINDOW parentWinow, const char * htmlFile, int x, int
     RECT Frame{};
     Frame.left = x;
     Frame.top = y;
-    Frame.right = x + width;
-    Frame.bottom = y + height;
+    Frame.right = x + (width > 0 ? width : 1);
+    Frame.bottom = y + (height > 0 ? height : 1);
 
-    m_hWnd = ::SciterCreateWindow(flags, (Frame.right - Frame.left) > 0 ? &Frame : nullptr, nullptr, nullptr, (SciterHWINDOW)parentWinow);
+    m_hWnd = ::SciterCreateWindow(flags, &Frame, nullptr, nullptr, (SciterHWINDOW)parentWinow);
 #endif
     if (m_hWnd != nullptr)
     {
@@ -228,37 +286,100 @@ void SciterWindow::FixMinSize()
     const uint32_t minWidth = SciterGetMinWidth((SciterHWINDOW)m_hWnd);
     const int usedWidth = std::max(0, rootBox.right - rootBox.left);
     const int usedHeight = std::max(0, rootBox.bottom - rootBox.top);
-    int width = std::max({layoutWidth, (int)minWidth, usedWidth});
-    int contentHeight = usedHeight;
     RECT contentBox{};
-    UINT childCount = 0;
-    if (root != nullptr &&
-        SciterGetElementLocation(root, &contentBox, VIEW_RELATIVE | CONTENT_BOX) == SCDOM_OK &&
-        SciterGetChildrenCount(root, &childCount) == SCDOM_OK)
+    if (root != nullptr)
     {
-        for (UINT i = 0; i < childCount; ++i)
+	    SciterGetElementLocation(root, &contentBox, VIEW_RELATIVE | CONTENT_BOX);
+    }
+
+    int width = 0;
+    int height = 0;
+    int contentHeight = 0;
+    if (layoutWidth > 0 && layoutHeight > 0)
+    {
+        width = layoutWidth;
+        height = layoutHeight;
+    }
+    else if (layoutWidth > 0)
+    {
+        width = layoutWidth;
+        UINT childCount = 0;
+        if (root != nullptr && SciterGetChildrenCount(root, &childCount) == SCDOM_OK)
         {
-            HELEMENT child = nullptr;
-            SBOOL visible = FALSE;
-            RECT box{};
-            if (SciterGetNthChild(root, i, &child) != SCDOM_OK ||
-                SciterIsElementVisible(child, &visible) != SCDOM_OK || !visible ||
-                SciterGetElementLocation(child, &box, VIEW_RELATIVE | MARGIN_BOX) != SCDOM_OK)
-                continue;
-            width = std::max(width, box.right - rootBox.left + rootBox.right - contentBox.right);
-            contentHeight = std::max(contentHeight, box.bottom - rootBox.top + rootBox.bottom - contentBox.bottom);
+            for (UINT i = 0; i < childCount; ++i)
+            {
+                HELEMENT child = nullptr;
+                SBOOL visible = FALSE;
+                RECT box{};
+                if (SciterGetNthChild(root, i, &child) != SCDOM_OK || SciterIsElementVisible(child, &visible) != SCDOM_OK || !visible || SciterGetElementLocation(child, &box, VIEW_RELATIVE | MARGIN_BOX) != SCDOM_OK)
+                {
+				    continue;
+                }
+				contentHeight = std::max(contentHeight, box.bottom - rootBox.top + rootBox.bottom - contentBox.bottom);
+            }
+        }
+        if (std::abs(width - usedWidth) <= 1)
+		{
+            contentHeight = std::max(contentHeight, usedHeight);
         }
     }
-    const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
-    SIZE size{width + frameWidth, std::max({layoutHeight, (int)minHeight, contentHeight}) + frameHeight};
+    else
+    {
+        const int canvasWidth = std::max({usedWidth, (int)minWidth, 1600});
+        const int canvasHeight = std::max({usedHeight, 1200});
+        if (usedWidth < canvasWidth || usedHeight < canvasHeight)
+        {
+            SIZE canvas{canvasWidth + frameWidth, canvasHeight + frameHeight};
+            ApplyWindowSize((SciterHWINDOW)m_hWnd, root, canvas);
+            SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_GET_PLACEMENT, 0, reinterpret_cast<UINT_PTR>(&placement));
+            if (SciterGetRootElement((SciterHWINDOW)m_hWnd, &root) == SCDOM_OK && root != nullptr)
+            {
+                SciterGetElementLocation(root, &rootBox, VIEW_RELATIVE | BORDER_BOX);
+                SciterGetElementLocation(root, &contentBox, VIEW_RELATIVE | CONTENT_BOX);
+                frameWidth = std::max(0, placement.cx - (rootBox.right - rootBox.left));
+                frameHeight = std::max(0, placement.cy - (rootBox.bottom - rootBox.top));
+            }
+        }
+        width = (int)SciterGetMinWidth((SciterHWINDOW)m_hWnd);
+        int measuredWidth = 0;
+        MeasureContentExtents(root, rootBox, contentBox, canvasWidth, canvasHeight, measuredWidth, contentHeight);
+        if (measuredWidth > 0 && measuredWidth * 5 < canvasWidth * 4)
+        {
+		    width = std::max(width, measuredWidth);
+		}
+    }
+
+    if (layoutHeight <= 0)
+    {
+        const uint32_t minHeight = SciterGetMinHeight((SciterHWINDOW)m_hWnd, width);
+        height = std::max({layoutHeight, (int)minHeight, contentHeight});
+    }
+    SIZE size{width + frameWidth, height + frameHeight};
     if (size.cx != placement.cx || size.cy != placement.cy)
     {
-        SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_PLACEMENT, 0,(UINT_PTR)&size);
-#if defined(__linux__)
-        SciterElement(root).Eval("Window.this.update()");
-#else
-        SciterUpdateWindow((SciterHWINDOW)m_hWnd);
-#endif
+	    ApplyWindowSize((SciterHWINDOW)m_hWnd, root, size);
+    }
+	if (layoutHeight <= 0 && root != nullptr && SciterGetElementLocation(root, &rootBox, VIEW_RELATIVE | BORDER_BOX) == SCDOM_OK && SciterGetElementLocation(root, &contentBox, VIEW_RELATIVE | CONTENT_BOX) == SCDOM_OK)
+    {
+        if (layoutWidth > 0)
+        {
+            height = std::max(height, rootBox.bottom - rootBox.top);
+        }
+        else
+        {
+            int fittedWidth = 0;
+            MeasureContentExtents(root, rootBox, contentBox, width, height, fittedWidth, contentHeight);
+            if (fittedWidth > 0 && fittedWidth * 5 < width * 4)
+            {
+			    width = std::max(width, fittedWidth);
+			}
+            height = std::max({height, contentHeight, (int)SciterGetMinHeight((SciterHWINDOW)m_hWnd, width)});
+        }
+        SIZE fitted{width + frameWidth, height + frameHeight};
+        if (fitted.cx > size.cx || fitted.cy > size.cy)
+        {
+		    ApplyWindowSize((SciterHWINDOW)m_hWnd, root, fitted);
+	    }
     }
 #endif
 }
