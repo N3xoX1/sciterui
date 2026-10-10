@@ -536,13 +536,15 @@ void SciterWindow::SetDestroyed(void)
 #if !defined(__linux__)
     if (m_hParent != nullptr)
     {
+#ifdef WIN32
+        // Hiding this window while its owner is still disabled makes Windows
+        // hand the foreground to another application.
+        EnableWindow((HWND)m_hParent, m_parentEnabled ? TRUE : FALSE);
+#endif
         if (m_hWnd != nullptr)
         {
             ::SciterWindowExec((SciterHWINDOW)m_hWnd, SCITER_WINDOW_SET_STATE, SCITER_WINDOW_STATE_HIDDEN, 0);
         }
-#ifdef WIN32
-        EnableWindow((HWND)m_hParent, m_parentEnabled ? TRUE : FALSE);
-#endif
         if (m_parentEnabled &&
             (m_parentState == SCITER_WINDOW_STATE_SHOWN ||
              m_parentState == SCITER_WINDOW_STATE_MAXIMIZED ||
